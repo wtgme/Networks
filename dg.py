@@ -19,7 +19,7 @@ class User(object):
 		
 
 # load a network from file
-with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
+with open('/Users/wt/Downloads/twitter/mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 	for line in fo.readlines():
 		tokens = line.split(',')
 		n1 = (tokens[0])
@@ -32,9 +32,9 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 			# print n1, n2, weightv
 		
 pos = nx.random_layout(DG)
-pos = nx.shell_layout(DG)
-pos = nx.spring_layout(DG)
-pos = nx.spectral_layout(DG)
+# pos = nx.shell_layout(DG)
+# pos = nx.spring_layout(DG)
+# pos = nx.spectral_layout(DG)
 nx.draw(DG, pos)
 
 
