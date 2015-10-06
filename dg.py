@@ -33,8 +33,8 @@ with open('/Users/wt/Downloads/twitter/mrredges-no-tweet-no-retweet-poi-counted.
 		
 # pos = nx.random_layout(DG)
 # pos = nx.shell_layout(DG)
-pos = nx.spring_layout(DG)
-# pos = nx.spectral_layout(DG)
+# pos = nx.spring_layout(DG)
+pos = nx.spectral_layout(DG)
 nx.draw(DG, pos)
 
 
