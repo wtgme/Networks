@@ -14,8 +14,7 @@ class User(object):
 		self.descrip = descrip
 		self.location = location
 		self.gender = gender
-
-		
+	
 
 # load a network from file
 with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
@@ -33,10 +32,15 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 		
 # pos = nx.random_layout(DG)
 # pos = nx.shell_layout(DG)
+
 #pos = nx.spring_layout(DG)
 #pos = nx.spectral_layout(DG)
 #nx.draw(DG, pos)
 #plt.show()
+pos = nx.spring_layout(DG)
+# pos = nx.spectral_layout(DG)
+nx.draw(DG, pos)
+plt.show()
 
 
 # load user profile from file
