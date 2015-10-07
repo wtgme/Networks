@@ -1,6 +1,5 @@
 from networkx import *
 import matplotlib.pyplot as plt
-import sys
 
 DG = nx.DiGraph()
 UserDic = {}
@@ -19,7 +18,7 @@ class User(object):
 		
 
 # load a network from file
-with open('/Users/wt/Downloads/twitter/mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
+with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 	for line in fo.readlines():
 		tokens = line.split(',')
 		n1 = (tokens[0])
@@ -30,30 +29,14 @@ with open('/Users/wt/Downloads/twitter/mrredges-no-tweet-no-retweet-poi-counted.
 		if b_type == 'reply-to':
 			DG.add_edge(n1, n2, weight=weightv)
 			# print n1, n2, weightv
+
 		
 # pos = nx.random_layout(DG)
 # pos = nx.shell_layout(DG)
-pos = nx.spring_layout(DG)
-# pos = nx.spectral_layout(DG)
-nx.draw(DG, pos)
-
-
-# plt.figure(figsize=(8,8))
-# # use graphviz to find radial layout
-# pos=nx.graphviz_layout(DG,prog="twopi",root=0)
-# # draw nodes, coloring by rtt ping time
-# nx.draw(DG,pos,
-#         node_color=[DG.rtt[v] for v in DG],
-#         with_labels=False,
-#         alpha=0.5,
-#         node_size=15)
-# # adjust the plot limits
-# xmax=1.02*max(xx for xx,yy in pos.values())
-# ymax=1.02*max(yy for xx,yy in pos.values())
-# plt.xlim(0,xmax)
-# plt.ylim(0,ymax)
-plt.show()
-# plt.savefig("lanl_routes.png")
+#pos = nx.spring_layout(DG)
+#pos = nx.spectral_layout(DG)
+#nx.draw(DG, pos)
+#plt.show()
 
 
 # load user profile from file
@@ -64,19 +47,22 @@ plt.show()
 # 		UserDic[user.uid] = user
 
 
-# network analysis
-# print 'The number of nodes: %d' %(DG.order())
-# print 'The number of nodes: %d' %(DG.__len__())
-# print 'The number of nodes: %d' %(DG.number_of_nodes())
-# print 'The number of edges: %d' %(DG.size())
-# print 'The number of self-loop: %d' %(DG.number_of_selfloops())
+#network analysis
+print 'The number of nodes: %d' %(DG.order())
+print 'The number of nodes: %d' %(DG.__len__())
+print 'The number of nodes: %d' %(DG.number_of_nodes())
+print 'The number of edges: %d' %(DG.size())
+print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
 
-# print 'The in-degree and out-degree of nodes'
-# print 'Node \t In-degree \t Out-degree'
-# for node in DG.nodes():
-# 	print '%s \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'))
-# print 'number of nodes: %d' %(len(DG.nodes()))
+print 'The in-degree and out-degree of nodes'
+print 'Node \t In-degree \t Out-degree'
+for node in DG.nodes():
+	print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
+print 'number of nodes: %d' %(len(DG.nodes()))
+
+plt.plot(list(nx.utils.cumulative_sum(nx.degree_histogram(DG))))
+plt.show()
 
 # print 'source vertex {taget: length,}'
 # pathlengths = []
