@@ -1,7 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Oct 08 16:22:26 2015
+
+@author: tw5n14
+"""
+
 from networkx import *
 import matplotlib.pyplot as plt
 
-DG = DiGraph()
+G = Graph()
 UserDic = {}
 
 class User(object):
@@ -17,7 +24,7 @@ class User(object):
     
 
 # load a network from file
-with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
+with open('mrreGes-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
     for line in fo.readlines():
         tokens = line.split(',')
         n1 = (tokens[0])
@@ -26,19 +33,19 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         weightv = int(tokens[3])
         # reply-to mentioned
         if b_type == 'mentioned':
-            DG.add_edge(n1, n2, weight=weightv)
+            G.add_edge(n1, n2, weight=weightv)
             # print n1, n2, weightv
 
         
-# pos = random_layout(DG)
-# pos = shell_layout(DG)
-#pos = spring_layout(DG)
-#pos = spectral_layout(DG)
-#draw(DG, pos)
+# pos = random_layout(G)
+# pos = shell_layout(G)
+#pos = spring_layout(G)
+#pos = spectral_layout(G)
+#draw(G, pos)
 #plt.show()
-#pos = spring_layout(DG)
-# pos = spectral_layout(DG)
-#draw(DG, pos)
+#pos = spring_layout(G)
+# pos = spectral_layout(G)
+#draw(G, pos)
 #plt.show()
 
 
@@ -51,21 +58,21 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 
 
 #network analysis
-print 'The number of nodes: %d' %(DG.order())
-print 'The number of nodes: %d' %(DG.__len__())
-print 'The number of nodes: %d' %(DG.number_of_nodes())
-print 'The number of edges: %d' %(DG.size())
-print 'The number of self-loop: %d' %(DG.number_of_selfloops())
+print 'The number of nodes: %d' %(G.order())
+print 'The number of nodes: %d' %(G.__len__())
+print 'The number of nodes: %d' %(G.number_of_nodes())
+print 'The number of edges: %d' %(G.size())
+print 'The number of self-loop: %d' %(G.number_of_selfloops())
 
 #print 'The plot of in-degree and out-degree of nodes'
 #print 'Node \t In-degree \t Out-degree'
 #indegree, outdegree = [],[]
-#for node in DG.nodes():
-#    print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
-#    indegree.append(DG.in_degree(node, weight='weight'))
-#    outdegree.append(DG.out_degree(node, weight='weight'))
+#for node in G.nodes():
+#    print '%s \t %d \t %d \t %d' %(node, G.in_degree(node, weight='weight'), G.out_degree(node, weight='weight'), G.degree(node, weight='weight'))
+#    indegree.append(G.in_degree(node, weight='weight'))
+#    outdegree.append(G.out_degree(node, weight='weight'))
 #
-#print 'number of nodes: %d' %(len(DG.nodes()))
+#print 'number of nodes: %d' %(len(G.nodes()))
 #plt.scatter(indegree, outdegree, alpha=0.5)
 #plt.title('Plot of In-degree and Out-degree (reply)')
 #plt.xlabel('In-degree')
@@ -80,7 +87,7 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 #plt.title('Numbers of Nodes with In-degree K Plot(mention)')
 #plt.ylabel('Number of nodes')
 #plt.xlabel('Degree')
-#degseq=list(DG.in_degree(weight='weight').values())
+#degseq=list(G.in_degree(weight='weight').values())
 #print degseq
 #dmax=max(degseq)+1
 #freq= [ 0 for d in range(dmax) ]
@@ -95,7 +102,7 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 #plt.ylabel('P')
 #plt.ylim(0.0,1.1)
 #plt.xlabel('Degree')
-#degseq=list(DG.degree(weight='weight').values())
+#degseq=list(G.degree(weight='weight').values())
 #dmax=max(degseq)+1
 #freq= [ 0 for d in range(dmax) ]
 #for d in degseq:
@@ -113,8 +120,8 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 ##histogram of path lengths
 #print 'source vertex {taget: length,}'
 #pathlengths = []
-#for v in DG.nodes():
-#    spl = single_source_shortest_path_length(DG, v)
+#for v in G.nodes():
+#    spl = single_source_shortest_path_length(G, v)
 ##    print '%s %s' %(v, spl)
 #    for p in spl.values():
 #        pathlengths.append(p)
@@ -136,15 +143,15 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 ##plt.ylim(ymin=-10.0)
 #plt.plot(distlist)
 
-#print (is_connected(DG))
+#print (is_connected(G))
 
-#print 'radius: %d' %(radius(DG))
-#print 'diameter: %d' %(diameter(DG))
-#print 'eccentricity: %s' %(eccentricity(DG))
-#print 'center: %s' %(center(DG))
-#print 'periphery: %s' %(periphery(DG))
-#print 'density: %s' %(density(DG))
+#print 'radius: %d' %(radius(G))
+#print 'diameter: %d' %(diameter(G))
+#print 'eccentricity: %s' %(eccentricity(G))
+#print 'center: %s' %(center(G))
+#print 'periphery: %s' %(periphery(G))
+#print 'density: %s' %(density(G))
 
-#k_clique_communities(DG, 5)
-#draw(DG)
+#k_clique_communities(G, 5)
+#draw(G)
 #plt.show()
