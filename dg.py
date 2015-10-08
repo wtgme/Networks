@@ -76,19 +76,19 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
     
 
-#plot the numbers of nodes with degree K
-plt.title('Numbers of Nodes with In-degree K Plot(mention)')
-plt.ylabel('Number of nodes')
-plt.xlabel('Degree')
-degseq=list(DG.in_degree(weight='weight').values())
-print degseq
-dmax=max(degseq)+1
-freq= [ 0 for d in range(dmax) ]
-for d in degseq:
-    freq[d] += 1
-plt.plot(freq)
-#plt.plot(list(nx.utils.cumulative_sum(freq)))
-plt.show()
+##plot the numbers of nodes with degree K
+#plt.title('Numbers of Nodes with In-degree K Plot(mention)')
+#plt.ylabel('Number of nodes')
+#plt.xlabel('Degree')
+#degseq=list(DG.in_degree(weight='weight').values())
+#print degseq
+#dmax=max(degseq)+1
+#freq= [ 0 for d in range(dmax) ]
+#for d in degseq:
+#    freq[d] += 1
+#plt.plot(freq)
+##plt.plot(list(nx.utils.cumulative_sum(freq)))
+#plt.show()
 
 ##plot cumulative distribution of degree K
 #plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
