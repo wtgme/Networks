@@ -90,6 +90,7 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 ##plt.plot(list(utils.cumulative_sum(freq)))
 #plt.show()
 
+
 ##plot cumulative distribution of degree K
 #plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
 #plt.ylabel('P')
@@ -109,6 +110,7 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 #    cumul.append(temp/sumall)
 #plt.plot(cumul)
 #plt.show()
+
 
 ##histogram of path lengths
 #print 'source vertex {taget: length,}'
