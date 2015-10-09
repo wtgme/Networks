@@ -24,7 +24,7 @@ class User(object):
     
 
 # load a network from file
-with open('mrreGes-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
+with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
     for line in fo.readlines():
         tokens = line.split(',')
         n1 = (tokens[0])
@@ -33,20 +33,20 @@ with open('mrreGes-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         weightv = int(tokens[3])
         # reply-to mentioned
         if b_type == 'mentioned':
-            G.add_edge(n1, n2, weight=weightv)
-            # print n1, n2, weightv
-
+            if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
+                # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
+                G[n1][n2]['weight'] += weightv
+            else:
+                G.add_edge(n1, n2, weight=weightv)
+            
+    
         
 # pos = random_layout(G)
 # pos = shell_layout(G)
-#pos = spring_layout(G)
+# pos = spring_layout(G)
 #pos = spectral_layout(G)
-#draw(G, pos)
-#plt.show()
-#pos = spring_layout(G)
-# pos = spectral_layout(G)
-#draw(G, pos)
-#plt.show()
+# draw(G, pos)
+# plt.show()
 
 
 # load user profile from file
@@ -63,6 +63,7 @@ print 'The number of nodes: %d' %(G.__len__())
 print 'The number of nodes: %d' %(G.number_of_nodes())
 print 'The number of edges: %d' %(G.size())
 print 'The number of self-loop: %d' %(G.number_of_selfloops())
+
 
 #print 'The plot of in-degree and out-degree of nodes'
 #print 'Node \t In-degree \t Out-degree'
@@ -96,6 +97,8 @@ print 'The number of self-loop: %d' %(G.number_of_selfloops())
 #plt.plot(freq)
 ##plt.plot(list(utils.cumulative_sum(freq)))
 #plt.show()
+
+
 
 ##plot cumulative distribution of degree K
 #plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
@@ -143,15 +146,15 @@ print 'The number of self-loop: %d' %(G.number_of_selfloops())
 ##plt.ylim(ymin=-10.0)
 #plt.plot(distlist)
 
-#print (is_connected(G))
+print (is_connected(G))
 
-#print 'radius: %d' %(radius(G))
-#print 'diameter: %d' %(diameter(G))
-#print 'eccentricity: %s' %(eccentricity(G))
-#print 'center: %s' %(center(G))
-#print 'periphery: %s' %(periphery(G))
-#print 'density: %s' %(density(G))
+# print 'radius: %d' %(radius(G))
+# print 'diameter: %d' %(diameter(G))
+# print 'eccentricity: %s' %(eccentricity(G))
+# print 'center: %s' %(center(G))
+# print 'periphery: %s' %(periphery(G))
+print 'density: %s' %(density(G))
 
-#k_clique_communities(G, 5)
-#draw(G)
-#plt.show()
+k_clique_communities(G, 5)
+draw(G)
+plt.show()
