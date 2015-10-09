@@ -8,6 +8,8 @@ Created on Thu Oct 08 16:22:26 2015
 from networkx import *
 import matplotlib.pyplot as plt
 
+
+
 G = Graph()
 UserDic = {}
 
@@ -32,7 +34,7 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         b_type = tokens[2]
         weightv = int(tokens[3])
         # reply-to mentioned
-        if b_type == 'mentioned':
+        if b_type == 'reply-to':
             if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
                 # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
                 G[n1][n2]['weight'] += weightv
@@ -152,9 +154,19 @@ print (is_connected(G))
 # print 'diameter: %d' %(diameter(G))
 # print 'eccentricity: %s' %(eccentricity(G))
 # print 'center: %s' %(center(G))
-# print 'periphery: %s' %(periphery(G))
+#print 'periphery: %s' %(periphery(G))
 print 'density: %s' %(density(G))
 
-k_clique_communities(G, 5)
-draw(G)
-plt.show()
+#plt.title('Plot of Giant Component(reply)')
+#pos = spring_layout(G)
+#draw(G, pos, with_label=False, node_size=5)
+Gcc = sorted(connected_component_subgraphs(G), key = len, reverse = True)
+print 'number of components in network: %d' %(len(Gcc))
+G0 = Gcc[0]
+print 'the size of giant components: %d' %(G0.number_of_nodes())
+#draw_networkx_edges(G0, pos, with_labels=False, edge_color='r', width = 1.0)
+#for Gi in Gcc[1:]:
+#    if len(Gi)>1:
+#        draw_networkx_edges(Gi, pos, with_labels=False, edge_color='g', alpha=0.3,width=0.2)
+#plt.show()
+

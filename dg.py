@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from networkx import *
+import math
 import matplotlib.pyplot as plt
 
 DG = DiGraph()
@@ -36,8 +38,9 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 #pos = spectral_layout(DG)
 #draw(DG, pos)
 #plt.show()
+#plt.title('Plot of Network(reply)')
 #pos = spring_layout(DG)
-# pos = spectral_layout(DG)
+## pos = spectral_layout(DG)
 #draw(DG, pos)
 #plt.show()
 
@@ -49,6 +52,22 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 #         user = User(tokens[0], tokens[1], tokens[2], tokens[3], tokens[7], tokens[8])
 #         UserDic[user.uid] = user
 
+def pearson(x,y):
+    n = len(x)
+    avg_x = float(sum(x))/n
+    avg_y = float(sum(y))/n
+    print avg_x, avg_y
+    diffprod = 0.0
+    xdiff2 = 0.0
+    ydiff2 = 0.0
+    for idx in range(n):
+        xdiff = x[idx] - avg_x
+        ydiff = y[idx] - avg_y
+        diffprod += xdiff*ydiff
+        xdiff2 += xdiff*xdiff
+        ydiff2 += ydiff*ydiff
+    print diffprod, math.sqrt(xdiff2*ydiff2)
+    return diffprod/math.sqrt(xdiff2*ydiff2)
 
 #network analysis
 print 'The number of nodes: %d' %(DG.order())
@@ -57,22 +76,26 @@ print 'The number of nodes: %d' %(DG.number_of_nodes())
 print 'The number of edges: %d' %(DG.size())
 print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
-#print 'The plot of in-degree and out-degree of nodes'
-#print 'Node \t In-degree \t Out-degree'
-#indegree, outdegree = [],[]
-#for node in DG.nodes():
+print 'The plot of in-degree and out-degree of nodes'
+print 'Node \t In-degree \t Out-degree'
+indegree, outdegree = [],[]
+for node in DG.nodes():
 #    print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
-#    indegree.append(DG.in_degree(node, weight='weight'))
-#    outdegree.append(DG.out_degree(node, weight='weight'))
-#
-#print 'number of nodes: %d' %(len(DG.nodes()))
-#plt.scatter(indegree, outdegree, alpha=0.5)
-#plt.title('Plot of In-degree and Out-degree (reply)')
-#plt.xlabel('In-degree')
-#plt.ylabel('Out-degree')
-#plt.xlim(xmin=0.0)
-#plt.ylim(ymin=0.0)
-#plot.show()
+    indegree.append(DG.in_degree(node, weight='weight'))
+    outdegree.append(DG.out_degree(node, weight='weight'))
+
+print indegree[0:4]
+print outdegree[0:4]
+print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
+
+
+plt.scatter(indegree, outdegree, alpha=0.5)
+plt.title('Plot of In-degree and Out-degree (reply)')
+plt.xlabel('In-degree')
+plt.ylabel('Out-degree')
+plt.xlim(xmin=0.0)
+plt.ylim(ymin=0.0)
+plt.show()
 
     
 
@@ -145,7 +168,7 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 #print 'eccentricity: %s' %(eccentricity(DG))
 #print 'center: %s' %(center(DG))
 #print 'periphery: %s' %(periphery(DG))
-#print 'density: %s' %(density(DG))
+print 'density: %s' %(density(DG))
 
 #k_clique_communities(DG, 5)
 #draw(DG)
