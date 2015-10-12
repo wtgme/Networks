@@ -17,29 +17,17 @@ userps = {}
 with open('poi.csv', 'rt') as f:
     reader = csv.reader(f)
     for row in reader:
+#        print row
         userp = {}
         userp['screem_name'] = row[1]
         userp['datetime'] = row[2]
         userp['descrip'] = row[3]
+        userp['lan'] = row[6]
         userp['location'] = row[7]
         userp['gender'] = row[8]
         userp['gw'] = row[9]
         userp['cw'] = row[10]
-        userps[tokens[0]] = userp
-        del userp 
-
-
-
-#with open('poi.txt','r') as fo:
-#    for line in fo.readlines():
-#        tokens = line.split(',')
-#        print tokens[0]
-        userp = {}
-        userp['screem_name'] = tokens[1]
-        userp['datetime'] = tokens[2]
-        userp['descrip'] = tokens[3]
-#        userp['location'] = tokens[7]
-#        userp['gender'] = tokens[8]
+#        print userp
         userps[tokens[0]] = userp
         del userp 
 
@@ -52,12 +40,12 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         b_type = tokens[2]
         weightv = int(tokens[3])
         # reply-to mentioned
-        if b_type == 'reply-to':
-            if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
-                # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
-                G[n1][n2]['weight'] += weightv
-            else:
-                G.add_edge(n1, n2, weight=weightv)
+#        if b_type == 'reply-to':
+        if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
+            # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
+            G[n1][n2]['weight'] += weightv
+        else:
+            G.add_edge(n1, n2, weight=weightv)
             
     
         
