@@ -7,23 +7,41 @@ Created on Thu Oct 08 16:22:26 2015
 
 from networkx import *
 import matplotlib.pyplot as plt
-
+import csv
 
 
 G = Graph()
-UserDic = {}
+userps = {}  
 
-class User(object):
-    """docstring for User"""
-    def __init__(self, uid, screen_name, datetime, descrip, location, gender):
-        super(User, self).__init__()
-        self.uid = uid
-        self.screen_name = screen_name
-        self.datetime = datetime
-        self.descrip = descrip
-        self.location = location
-        self.gender = gender
-    
+#load user profile from file
+with open('poi.csv', 'rt') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        userp = {}
+        userp['screem_name'] = row[1]
+        userp['datetime'] = row[2]
+        userp['descrip'] = row[3]
+        userp['location'] = row[7]
+        userp['gender'] = row[8]
+        userp['gw'] = row[9]
+        userp['cw'] = row[10]
+        userps[tokens[0]] = userp
+        del userp 
+
+
+
+#with open('poi.txt','r') as fo:
+#    for line in fo.readlines():
+#        tokens = line.split(',')
+#        print tokens[0]
+        userp = {}
+        userp['screem_name'] = tokens[1]
+        userp['datetime'] = tokens[2]
+        userp['descrip'] = tokens[3]
+#        userp['location'] = tokens[7]
+#        userp['gender'] = tokens[8]
+        userps[tokens[0]] = userp
+        del userp 
 
 # load a network from file
 with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
@@ -50,13 +68,6 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 # draw(G, pos)
 # plt.show()
 
-
-# load user profile from file
-# with open('poi.txt','r') as fo:
-#     for line in fo.readlines():
-#         tokens = line.split(',')
-#         user = User(tokens[0], tokens[1], tokens[2], tokens[3], tokens[7], tokens[8])
-#         UserDic[user.uid] = user
 
 
 #network analysis
@@ -160,10 +171,10 @@ print 'density: %s' %(density(G))
 #plt.title('Plot of Giant Component(reply)')
 #pos = spring_layout(G)
 #draw(G, pos, with_label=False, node_size=5)
-Gcc = sorted(connected_component_subgraphs(G), key = len, reverse = True)
-print 'number of components in network: %d' %(len(Gcc))
-G0 = Gcc[0]
-print 'the size of giant components: %d' %(G0.number_of_nodes())
+#Gcc = sorted(connected_component_subgraphs(G), key = len, reverse = True)
+#print 'number of components in network: %d' %(len(Gcc))
+#G0 = Gcc[0]
+#print 'the size of giant components: %d' %(G0.number_of_nodes())
 #draw_networkx_edges(G0, pos, with_labels=False, edge_color='r', width = 1.0)
 #for Gi in Gcc[1:]:
 #    if len(Gi)>1:

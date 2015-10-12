@@ -27,7 +27,7 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         b_type = tokens[2]
         weightv = int(tokens[3])
         # reply-to mentioned
-        if b_type == 'mentioned':
+        if b_type == 'reply-to':
             DG.add_edge(n1, n2, weight=weightv)
             # print n1, n2, weightv
 
@@ -69,33 +69,31 @@ def pearson(x,y):
     print diffprod, math.sqrt(xdiff2*ydiff2)
     return diffprod/math.sqrt(xdiff2*ydiff2)
 
-#network analysis
-print 'The number of nodes: %d' %(DG.order())
-print 'The number of nodes: %d' %(DG.__len__())
-print 'The number of nodes: %d' %(DG.number_of_nodes())
-print 'The number of edges: %d' %(DG.size())
-print 'The number of self-loop: %d' %(DG.number_of_selfloops())
-
-print 'The plot of in-degree and out-degree of nodes'
-print 'Node \t In-degree \t Out-degree'
-indegree, outdegree = [],[]
-for node in DG.nodes():
-#    print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
-    indegree.append(DG.in_degree(node, weight='weight'))
-    outdegree.append(DG.out_degree(node, weight='weight'))
-
-print indegree[0:4]
-print outdegree[0:4]
-print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
-
-
-plt.scatter(indegree, outdegree, alpha=0.5)
-plt.title('Plot of In-degree and Out-degree (reply)')
-plt.xlabel('In-degree')
-plt.ylabel('Out-degree')
-plt.xlim(xmin=0.0)
-plt.ylim(ymin=0.0)
-plt.show()
+##network analysis
+#print 'The number of nodes: %d' %(DG.order())
+#print 'The number of nodes: %d' %(DG.__len__())
+#print 'The number of nodes: %d' %(DG.number_of_nodes())
+#print 'The number of edges: %d' %(DG.size())
+#print 'The number of self-loop: %d' %(DG.number_of_selfloops())
+#
+#print 'The plot of in-degree and out-degree of nodes'
+#print 'Node \t In-degree \t Out-degree'
+#indegree, outdegree = [],[]
+#for node in DG.nodes():
+##    print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
+#    indegree.append(DG.in_degree(node, weight='weight'))
+#    outdegree.append(DG.out_degree(node, weight='weight'))
+#
+#print indegree[0:4]
+#print outdegree[0:4]
+#print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
+#plt.scatter(indegree, outdegree, alpha=0.5)
+#plt.title('Plot of In-degree and Out-degree (reply)')
+#plt.xlabel('In-degree')
+#plt.ylabel('Out-degree')
+#plt.xlim(xmin=0.0)
+#plt.ylim(ymin=0.0)
+#plt.show()
 
     
 
@@ -135,31 +133,31 @@ plt.show()
 #plt.show()
 
 
-##histogram of path lengths
-#print 'source vertex {taget: length,}'
-#pathlengths = []
-#for v in DG.nodes():
-#    spl = single_source_shortest_path_length(DG, v)
-##    print '%s %s' %(v, spl)
-#    for p in spl.values():
-#        pathlengths.append(p)
-#print 'average shortest path length %s' %(sum(pathlengths)/len(pathlengths))
-#
-#dist = {}
-#for p in pathlengths:
-#    v = dist.get(p,0)+1
-#    dist[p] = v
-#print 'length #paths'
-#verts = dist.keys()
-#distlist = []
-#for d in sorted(verts):
-#    distlist.append(dist[d])
-#    print '%s %d' %(d, dist[d])
-#plt.title('Plot of Shortest Path and Numbers of Paths(reply)')
-#plt.ylabel('Counts')
-#plt.xlabel('Path Length')
-##plt.ylim(ymin=-10.0)
-#plt.plot(distlist)
+#histogram of path lengths
+print 'source vertex {taget: length,}'
+pathlengths = []
+for v in DG.nodes():
+    spl = single_source_shortest_path_length(DG, v)
+#    print '%s %s' %(v, spl)
+    for p in spl.values():
+        pathlengths.append(p)
+print 'average shortest path length %s' %(float(sum(pathlengths))/len(pathlengths))
+
+dist = {}
+for p in pathlengths:
+    v = dist.get(p,0)+1
+    dist[p] = v
+print 'length #paths'
+verts = dist.keys()
+distlist = []
+for d in sorted(verts):
+    distlist.append(dist[d])
+    print '%s %d' %(d, dist[d])
+plt.title('Plot of Shortest Path and Numbers of Paths(reply)')
+plt.ylabel('Counts')
+plt.xlabel('Path Length')
+#plt.ylim(ymin=-10.0)
+plt.plot(distlist)
 
 #print (is_connected(DG))
 
