@@ -2,6 +2,8 @@
 from networkx import *
 import math
 import matplotlib.pyplot as plt
+import numpy as np
+import powerlaw
 
 DG = DiGraph()
 UserDic = {}
@@ -27,9 +29,10 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         b_type = tokens[2]
         weightv = int(tokens[3])
         # reply-to mentioned
-#        if b_type == 'reply-to':
+        if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
+            DG[n1][n2]['weight'] += weightv
+        else:
             DG.add_edge(n1, n2, weight=weightv)
-            # print n1, n2, weightv
 
         
 # pos = random_layout(DG)
@@ -66,34 +69,84 @@ def pearson(x,y):
         diffprod += xdiff*ydiff
         xdiff2 += xdiff*xdiff
         ydiff2 += ydiff*ydiff
-    print diffprod, math.sqrt(xdiff2*ydiff2)
     return diffprod/math.sqrt(xdiff2*ydiff2)
 
+def drop_zeros(list_a):
+    return [i for i in list_a if i>0]
+
+def log_binning(list_x, list_y, bin_count=35):
+    max_x = np.log10(max(list_x))
+    max_y = np.log10(max(list_y))
+    min_x = np.log10(min(drop_zeros(list_x)))
+    min_y = np.log10(min(drop_zeros(list_y)))
+    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    bins_y = np.logspace(min_y, max_y, num=bin_count)
+    bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0] / (np.histogram(list_x,bins_x)[0])
+    bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0] / (np.histogram(list_y,bins_y)[0])    
+    return bin_means_x, bin_means_y
+
+
 ##network analysis
-#print 'The number of nodes: %d' %(DG.order())
-#print 'The number of nodes: %d' %(DG.__len__())
-#print 'The number of nodes: %d' %(DG.number_of_nodes())
-#print 'The number of edges: %d' %(DG.size())
-#print 'The number of self-loop: %d' %(DG.number_of_selfloops())
-#
-#print 'The plot of in-degree and out-degree of nodes'
-#print 'Node \t In-degree \t Out-degree'
-#indegree, outdegree = [],[]
-#for node in DG.nodes():
-##    print '%s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
-#    indegree.append(DG.in_degree(node, weight='weight'))
-#    outdegree.append(DG.out_degree(node, weight='weight'))
-#
-#print indegree[0:4]
-#print outdegree[0:4]
-#print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
-#plt.scatter(indegree, outdegree, alpha=0.5)
-#plt.title('Plot of In-degree and Out-degree (reply)')
-#plt.xlabel('In-degree')
-#plt.ylabel('Out-degree')
-#plt.xlim(xmin=0.0)
-#plt.ylim(ymin=0.0)
+print 'The number of nodes: %d' %(DG.order())
+print 'The number of nodes: %d' %(DG.__len__())
+print 'The number of nodes: %d' %(DG.number_of_nodes())
+print 'The number of edges: %d' %(DG.size())
+print 'The number of self-loop: %d' %(DG.number_of_selfloops())
+
+print 'The plot of in-degree and out-degree of nodes'
+print 'Node \t In-degree \t Out-degree'
+indegree, outdegree, instrength, outstrength = [],[],[],[]
+for node in DG.nodes():
+#    print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
+#    print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
+    indegree.append(DG.in_degree(node))
+    outdegree.append(DG.out_degree(node))
+    instrength.append(DG.out_degree(node, weight='weight'))
+    outstrength.append(DG.out_degree(node, weight='weight'))
+
+
+#bd_in, bd_out = log_binning(indegree, outdegree, 50)
+#bs_in, bs_out = log_binning(instrength, outstrength, 50)
+#plt.xscale('log')
+#plt.yscale('log')
+#plt.xlabel('In-count')
+#plt.ylabel('Out-count')
+#plt.xlim(1, 1e3+1000)
+#plt.ylim(1, 1e3+1000)
+#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
+#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
+#plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
 #plt.show()
+#print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
+#print 'pearson correlation of instrength and outstrength: %f' %(pearson(instrength, outstrength))
+
+data = drop_zeros(indegree)
+fit = powerlaw.Fit(data, discrete=True)
+figPDF = powerlaw.plot_pdf(data, color='b')
+figCCDF = fit.plot_ccdf(color='b', linewidth=2)
+powerlaw.plot_pdf(data, linear_bins=True, color='r', ax=figPDF)
+powerlaw.plot_ccdf(data, color='c', ax=figCCDF)
+
+####
+figPDF.set_ylabel("p(X)")
+figPDF.set_xlabel(r"Word Frequency")
+figname = 'FigPDF'
+savefig(figname+'.eps', bbox_inches='tight')
+
+
+#fit = powerlaw.Fit(data, discrete=True)
+#####
+#figCCDF = fit.plot_pdf(color='b', linewidth=2)
+#fit.power_law.plot_pdf(color='b', linestyle='--', ax=figCCDF)
+#fit.plot_ccdf(color='r', linewidth=2, ax=figCCDF)
+#fit.power_law.plot_ccdf(color='r', linestyle='--', ax=figCCDF)
+#####
+#figCCDF.set_ylabel(u"p(X),  p(X≥x)")
+#figCCDF.set_xlabel(r"Word Frequency")
+#
+#figname = 'FigCCDF'
+#savefig(figname+'.eps', bbox_inches='tight')
+
 
     
 
@@ -112,12 +165,40 @@ def pearson(x,y):
 #plt.show()
 
 
-##plot cumulative distribution of degree K
+#def cumu_dist(degree_list):
+#    kmin=min(degree_list)
+#    kmax=max(degree_list)
+#    
+#    bins=[float(k-0.5) for k in range(kmin,kmax+2,1)]
+#    density, binedges = np.histogram(degree_list, bins=bins, density=True)
+#    bins = np.delete(bins, -1)
+#    
+#    logBins = np.logspace(np.log10(kmin), np.log10(kmax),num=50)
+#    logBinDensity, binedges = np.histogram(degree_list, bins=logBins, density=True)
+#    logBins = np.delete(logBins, -1)
+##    fig = plt.figure()
+##    ax = fig.add_subplot(111)
+##    ax.set_xscale('log')
+##    ax.set_yscale('log')
+##    plt.plot(bins,density,'+',color='black')
+##    plt.plot(logBins,logBinDensity,'x',color='blue')
+#    return logBins, logBinDensity
+    
+
+
+#plot cumulative distribution of degree K
 #plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
 #plt.ylabel('P')
 #plt.ylim(0.0,1.1)
 #plt.xlabel('Degree')
 #degseq=list(DG.degree(weight='weight').values())
+#logBins, logBinDensity = cumu_dist(degseq)
+#fig = plt.figure()
+#ax = fig.add_subplot(111)
+#ax.set_title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
+#ax.set_xscale('log')
+#ax.set_yscale('log')
+#plt.plot(logBins,logBinDensity,'x',color='blue')
 #dmax=max(degseq)+1
 #freq= [ 0 for d in range(dmax) ]
 #for d in degseq:
@@ -129,35 +210,36 @@ def pearson(x,y):
 #for fre in freq:
 #    temp += fre
 #    cumul.append(temp/sumall)
+
 #plt.plot(cumul)
 #plt.show()
 
 
 #histogram of path lengths
-print 'source vertex {taget: length,}'
-pathlengths = []
-for v in DG.nodes():
-    spl = single_source_shortest_path_length(DG, v)
-#    print '%s %s' %(v, spl)
-    for p in spl.values():
-        pathlengths.append(p)
-print 'average shortest path length %s' %(float(sum(pathlengths))/len(pathlengths))
-
-dist = {}
-for p in pathlengths:
-    v = dist.get(p,0)+1
-    dist[p] = v
-print 'length #paths'
-verts = dist.keys()
-distlist = []
-for d in sorted(verts):
-    distlist.append(dist[d])
-    print '%s %d' %(d, dist[d])
-plt.title('Plot of Shortest Path and Numbers of Paths(reply)')
-plt.ylabel('Counts')
-plt.xlabel('Path Length')
-#plt.ylim(ymin=-10.0)
-plt.plot(distlist)
+#print 'source vertex {taget: length,}'
+#pathlengths = []
+#for v in DG.nodes():
+#    spl = single_source_shortest_path_length(DG, v)
+##    print '%s %s' %(v, spl)
+#    for p in spl.values():
+#        pathlengths.append(p)
+#print 'average shortest path length %s' %(float(sum(pathlengths))/len(pathlengths))
+#
+#dist = {}
+#for p in pathlengths:
+#    v = dist.get(p,0)+1
+#    dist[p] = v
+#print 'length #paths'
+#verts = dist.keys()
+#distlist = []
+#for d in sorted(verts):
+#    distlist.append(dist[d])
+#    print '%s %d' %(d, dist[d])
+#plt.title('Plot of Shortest Path and Numbers of Paths(reply)')
+#plt.ylabel('Counts')
+#plt.xlabel('Path Length')
+##plt.ylim(ymin=-10.0)
+#plt.plot(distlist)
 
 #print (is_connected(DG))
 
@@ -166,7 +248,7 @@ plt.plot(distlist)
 #print 'eccentricity: %s' %(eccentricity(DG))
 #print 'center: %s' %(center(DG))
 #print 'periphery: %s' %(periphery(DG))
-print 'density: %s' %(density(DG))
+#print 'density: %s' %(density(DG))
 
 #k_clique_communities(DG, 5)
 #draw(DG)
