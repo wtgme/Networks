@@ -27,7 +27,7 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         b_type = tokens[2]
         weightv = int(tokens[3])
         # reply-to mentioned
-        if b_type == 'reply-to':
+#        if b_type == 'reply-to':
             DG.add_edge(n1, n2, weight=weightv)
             # print n1, n2, weightv
 
