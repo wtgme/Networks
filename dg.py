@@ -3,7 +3,6 @@ from networkx import *
 import math
 import matplotlib.pyplot as plt
 import numpy as np
-import powerlaw
 
 DG = DiGraph()
 UserDic = {}
@@ -81,10 +80,24 @@ def log_binning(list_x, list_y, bin_count=35):
     min_y = np.log10(min(drop_zeros(list_y)))
     bins_x = np.logspace(min_x, max_x, num=bin_count)
     bins_y = np.logspace(min_y, max_y, num=bin_count)
-    bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0] / (np.histogram(list_x,bins_x)[0])
-    bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0] / (np.histogram(list_y,bins_y)[0])    
+    bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0] / (np.histogram(list_x, bins_x)[0])
+    bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0] / (np.histogram(list_y, bins_y)[0])    
     return bin_means_x, bin_means_y
 
+
+def CPD(list_x, bin_count=35):  
+    max_x = np.log10(max(list_x))
+    min_x = np.log10(min(drop_zeros(list_x)))
+    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    weights = np.ones_like(list_x)/float(len(list_x))
+    hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
+#    cum = np.cumsum(hist)
+    cum = np.cumsum(hist[::-1])[::-1] 
+    print len(cum)
+    print len(bin_deges)
+    return cum, bin_deges
+
+    
 
 ##network analysis
 print 'The number of nodes: %d' %(DG.order())
@@ -104,48 +117,45 @@ for node in DG.nodes():
     instrength.append(DG.out_degree(node, weight='weight'))
     outstrength.append(DG.out_degree(node, weight='weight'))
 
+bd_in, bd_out = log_binning(indegree, outdegree, 50)
+bs_in, bs_out = log_binning(instrength, outstrength, 50)
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('In-count')
+plt.ylabel('Out-count')
+plt.xlim(1, 1e3+1000)
+plt.ylim(1, 1e3+1000)
+degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
+strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
+plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
 
-#bd_in, bd_out = log_binning(indegree, outdegree, 50)
-#bs_in, bs_out = log_binning(instrength, outstrength, 50)
+
+#indcum, indbin_deges = CPD(indegree, 100)
+#indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
+#indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='*')
+#
+#outdcum, outdbin_deges = CPD(outdegree, 100)
+#outdbin_centers = (outdbin_deges[1:]+outdbin_deges[:-1])/2.0
+#outdegr, = plt.plot(outdbin_centers, outdcum, color='black', marker='+')
+#
+#inscum, insbin_deges = CPD(instrength, 100)
+#insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
+#instre, = plt.plot(insbin_centers, inscum, color='red', marker='x')
+#
+#outscum, outsbin_deges = CPD(outstrength, 100)
+#outsbin_centers = (outsbin_deges[1:]+outsbin_deges[:-1])/2.0
+#outstre, = plt.plot(outsbin_centers, outscum, color='c', marker='.', linewidth=3)
+#
+#plt.legend((indegr, outdegr, instre, outstre), ('In-Degree', 'Out-Degree', 'In-Strength', 'Out-Strength'), loc='right')
+#
 #plt.xscale('log')
 #plt.yscale('log')
-#plt.xlabel('In-count')
-#plt.ylabel('Out-count')
-#plt.xlim(1, 1e3+1000)
-#plt.ylim(1, 1e3+1000)
-#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
-#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
-#plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
-#plt.show()
-#print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
-#print 'pearson correlation of instrength and outstrength: %f' %(pearson(instrength, outstrength))
 
-data = drop_zeros(indegree)
-fit = powerlaw.Fit(data, discrete=True)
-figPDF = powerlaw.plot_pdf(data, color='b')
-figCCDF = fit.plot_ccdf(color='b', linewidth=2)
-powerlaw.plot_pdf(data, linear_bins=True, color='r', ax=figPDF)
-powerlaw.plot_ccdf(data, color='c', ax=figCCDF)
-
-####
-figPDF.set_ylabel("p(X)")
-figPDF.set_xlabel(r"Word Frequency")
-figname = 'FigPDF'
-savefig(figname+'.eps', bbox_inches='tight')
+print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
+print 'pearson correlation of instrength and outstrength: %f' %(pearson(instrength, outstrength))
 
 
-#fit = powerlaw.Fit(data, discrete=True)
-#####
-#figCCDF = fit.plot_pdf(color='b', linewidth=2)
-#fit.power_law.plot_pdf(color='b', linestyle='--', ax=figCCDF)
-#fit.plot_ccdf(color='r', linewidth=2, ax=figCCDF)
-#fit.power_law.plot_ccdf(color='r', linestyle='--', ax=figCCDF)
-#####
-#figCCDF.set_ylabel(u"p(X),  p(X≥x)")
-#figCCDF.set_xlabel(r"Word Frequency")
-#
-#figname = 'FigCCDF'
-#savefig(figname+'.eps', bbox_inches='tight')
+
 
 
     

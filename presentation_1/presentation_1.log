@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.10.12)  12 OCT 2015 20:56
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (MiKTeX 2.9 64-bit) (preloaded format=pdflatex 2015.10.12)  15 OCT 2015 22:09
 entering extended mode
 **presentation_1.tex
 (C:\Users\tw5n14\Documents\GitHub\Networks\presentation_1\presentation_1.tex
@@ -945,35 +945,81 @@ Package pdftex.def Info: in_out-eps-converted-to.pdf used on input line 126.
  [2
 
  <C:/Users/tw5n14/Documents/GitHub/Networks/presentation_1/in_out-eps-converted
--to.pdf>] [3
+-to.pdf>]
+Package epstopdf Info: Source file: <de_st.eps>
+(epstopdf)                    date: 2015-10-15 22:06:53
+(epstopdf)                    size: 54299 bytes
+(epstopdf)             Output file: <de_st-eps-converted-to.pdf>
+(epstopdf)                    date: 2015-10-15 22:08:02
+(epstopdf)                    size: 20267 bytes
+(epstopdf)             Command: <epstopdf --outfile=de_st-eps-converted-to.pdf 
+de_st.eps>
+(epstopdf)             \includegraphics on input line 133.
+Package epstopdf Info: Output file is already uptodate.
 
-]
-Overfull \vbox (10.5129pt too high) detected at line 156
+<de_st-eps-converted-to.pdf, id=104, 578.16pt x 432.61626pt>
+File: de_st-eps-converted-to.pdf Graphic file (type pdf)
+
+<use de_st-eps-converted-to.pdf>
+Package pdftex.def Info: de_st-eps-converted-to.pdf used on input line 133.
+(pdftex.def)             Requested size: 188.98093pt x 141.40396pt.
+ [3
+
+ <C:/Users/tw5n14/Documents/GitHub/Networks/presentation_1/de_st-eps-converted-
+to.pdf>]
+Package epstopdf Info: Source file: <degree.eps>
+(epstopdf)                    date: 2015-10-15 21:52:28
+(epstopdf)                    size: 63056 bytes
+(epstopdf)             Output file: <degree-eps-converted-to.pdf>
+(epstopdf)                    date: 2015-10-15 21:52:31
+(epstopdf)                    size: 39202 bytes
+(epstopdf)             Command: <epstopdf --outfile=degree-eps-converted-to.pdf
+ degree.eps>
+(epstopdf)             \includegraphics on input line 140.
+Package epstopdf Info: Output file is already uptodate.
+
+<degree-eps-converted-to.pdf, id=158, 578.16pt x 432.61626pt>
+File: degree-eps-converted-to.pdf Graphic file (type pdf)
+
+<use degree-eps-converted-to.pdf>
+Package pdftex.def Info: degree-eps-converted-to.pdf used on input line 140.
+(pdftex.def)             Requested size: 290.74263pt x 217.54861pt.
+
+Overfull \vbox (9.13948pt too high) detected at line 140
  []
 
 [4
 
+ <C:/Users/tw5n14/Documents/GitHub/Networks/presentation_1/degree-eps-converted
+-to.pdf>] [5
+
+]
+Overfull \vbox (10.5129pt too high) detected at line 170
+ []
+
+[6
+
 ]
 LaTeX Font Info:    Font shape `OT1/phv/bx/n' in size <10.95> not available
-(Font)              Font shape `OT1/phv/b/n' tried instead on input line 176.
-LaTeX Font Info:    Try loading font information for U+msa on input line 176.
+(Font)              Font shape `OT1/phv/b/n' tried instead on input line 190.
+LaTeX Font Info:    Try loading font information for U+msa on input line 190.
  ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsa.fd"
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 176.
+LaTeX Font Info:    Try loading font information for U+msb on input line 190.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\amsfonts\umsb.fd"
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <10.95> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 176.
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 190.
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <6> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 176.
- [5
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 190.
+ [7
 
-] [6
+] [8
 
-] [7
+] [9
 
 ]
 (C:\Users\tw5n14\Documents\GitHub\Networks\presentation_1\presentation_1.vrb
@@ -981,41 +1027,41 @@ LaTeX Font Info:    Try loading font information for OT1+pcr on input line 3.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\psnfss\ot1pcr.fd"
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
-)) [8
+)) [10
 
-] [9
+] [11
 
 ]
 (C:\Users\tw5n14\Documents\GitHub\Networks\presentation_1\presentation_1.vrb)
-[10
+[12
 
 ]
 LaTeX Font Info:    Font shape `OT1/phv/m/it' in size <9> not available
-(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 252.
- [11
+(Font)              Font shape `OT1/phv/m/sl' tried instead on input line 266.
+ [13
 
  <C:/Program Files/MiKTeX 2.9/tex/latex/beamer/base/art/beamericonarticle.pdf>]
- [12
+ [14
 
 ]
 \tf@nav=\write6
 \tf@toc=\write7
 \tf@snm=\write8
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 262.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 262.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 276.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 276.
 
 (C:\Users\tw5n14\Documents\GitHub\Networks\presentation_1\presentation_1.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 262.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 262.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 276.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 276.
 Package rerunfilecheck Info: File `presentation_1.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 262.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 276.
  ) 
 Here is how much of TeX's memory you used:
- 17004 strings out of 493706
- 328166 string characters out of 3144579
+ 17022 strings out of 493706
+ 328505 string characters out of 3144579
  395619 words of memory out of 3000000
- 19867 multiletter control sequences out of 15000+200000
+ 19879 multiletter control sequences out of 15000+200000
  30301 words of font info for 60 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
  56i,16n,69p,395b,802s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1024,9 +1070,9 @@ s/MiKTeX 2.9/fonts/type1/public/amsfonts/cm/cmss10.pfb><C:/Program Files/MiKTeX
  2.9/fonts/type1/urw/courier/ucrr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type
 1/urw/helvetic/uhvb8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic
 /uhvr8a.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/urw/helvetic/uhvro8a.pfb>
-Output written on presentation_1.pdf (12 pages, 149254 bytes).
+Output written on presentation_1.pdf (14 pages, 216041 bytes).
 PDF statistics:
- 406 PDF objects out of 1000 (max. 8388607)
- 26 named destinations out of 1000 (max. 500000)
- 84 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 509 PDF objects out of 1000 (max. 8388607)
+ 30 named destinations out of 1000 (max. 500000)
+ 94 words of extra memory for PDF output out of 10000 (max. 10000000)
 
