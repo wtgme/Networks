@@ -3,9 +3,11 @@ from networkx import *
 import math
 import matplotlib.pyplot as plt
 import numpy as np
+import csv
 
 DG = DiGraph()
 UserDic = {}
+userps = {}  
 
 class User(object):
     """docstring for User"""
@@ -46,13 +48,23 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 #draw(DG, pos)
 #plt.show()
 
-
-# load user profile from file
-# with open('poi.txt','r') as fo:
-#     for line in fo.readlines():
-#         tokens = line.split(',')
-#         user = User(tokens[0], tokens[1], tokens[2], tokens[3], tokens[7], tokens[8])
-#         UserDic[user.uid] = user
+with open('poi.csv', 'rt') as f:
+    reader = csv.reader(f)
+    first_row = next(reader)
+    for row in reader:
+#        print row
+        userp = {}
+        userp['screem_name'] = row[1]
+        userp['datetime'] = row[2]
+        userp['descrip'] = row[3]
+        userp['lan'] = row[6]
+        userp['location'] = row[7]
+        userp['gender'] = row[8]
+        userp['gw'] = row[9]
+        userp['cw'] = row[10]
+#        print userp
+        userps[row[0]] = userp
+        del userp 
 
 def pearson(x,y):
     n = len(x)
@@ -110,119 +122,53 @@ print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In-degree \t Out-degree'
 indegree, outdegree, instrength, outstrength = [],[],[],[]
 for node in DG.nodes():
-#    print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
-#    print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
+    print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
+    print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
     indegree.append(DG.in_degree(node))
     outdegree.append(DG.out_degree(node))
     instrength.append(DG.out_degree(node, weight='weight'))
     outstrength.append(DG.out_degree(node, weight='weight'))
 
-bd_in, bd_out = log_binning(indegree, outdegree, 50)
-bs_in, bs_out = log_binning(instrength, outstrength, 50)
-plt.xscale('log')
-plt.yscale('log')
-plt.xlabel('In-count')
-plt.ylabel('Out-count')
-plt.xlim(1, 1e3+1000)
-plt.ylim(1, 1e3+1000)
-degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
-strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
-plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
-
-
-#indcum, indbin_deges = CPD(indegree, 100)
-#indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
-#indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='*')
-#
-#outdcum, outdbin_deges = CPD(outdegree, 100)
-#outdbin_centers = (outdbin_deges[1:]+outdbin_deges[:-1])/2.0
-#outdegr, = plt.plot(outdbin_centers, outdcum, color='black', marker='+')
-#
-#inscum, insbin_deges = CPD(instrength, 100)
-#insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
-#instre, = plt.plot(insbin_centers, inscum, color='red', marker='x')
-#
-#outscum, outsbin_deges = CPD(outstrength, 100)
-#outsbin_centers = (outsbin_deges[1:]+outsbin_deges[:-1])/2.0
-#outstre, = plt.plot(outsbin_centers, outscum, color='c', marker='.', linewidth=3)
-#
-#plt.legend((indegr, outdegr, instre, outstre), ('In-Degree', 'Out-Degree', 'In-Strength', 'Out-Strength'), loc='right')
-#
+#bd_in, bd_out = log_binning(indegree, outdegree, 50)
+#bs_in, bs_out = log_binning(instrength, outstrength, 50)
 #plt.xscale('log')
 #plt.yscale('log')
+#plt.xlabel('In-count')
+#plt.ylabel('Out-count')
+#plt.xlim(1, 1e3+1000)
+#plt.ylim(1, 1e3+1000)
+#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
+#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
+#plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
+
+
+indcum, indbin_deges = CPD(indegree, 100)
+indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
+indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='*')
+
+outdcum, outdbin_deges = CPD(outdegree, 100)
+outdbin_centers = (outdbin_deges[1:]+outdbin_deges[:-1])/2.0
+outdegr, = plt.plot(outdbin_centers, outdcum, color='black', marker='+')
+
+inscum, insbin_deges = CPD(instrength, 100)
+insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
+instre, = plt.plot(insbin_centers, inscum, color='red', marker='x')
+
+outscum, outsbin_deges = CPD(outstrength, 100)
+outsbin_centers = (outsbin_deges[1:]+outsbin_deges[:-1])/2.0
+outstre, = plt.plot(outsbin_centers, outscum, color='c', marker='.', linewidth=3)
+
+plt.legend((indegr, outdegr, instre, outstre), ('In-Degree', 'Out-Degree', 'In-Strength', 'Out-Strength'), loc=3)
+
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('k')
+plt.ylabel('P(k)')
 
 print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
 print 'pearson correlation of instrength and outstrength: %f' %(pearson(instrength, outstrength))
 
 
-
-
-
-    
-
-##plot the numbers of nodes with degree K
-#plt.title('Numbers of Nodes with In-degree K Plot(mention)')
-#plt.ylabel('Number of nodes')
-#plt.xlabel('Degree')
-#degseq=list(DG.in_degree(weight='weight').values())
-#print degseq
-#dmax=max(degseq)+1
-#freq= [ 0 for d in range(dmax) ]
-#for d in degseq:
-#    freq[d] += 1
-#plt.plot(freq)
-##plt.plot(list(utils.cumulative_sum(freq)))
-#plt.show()
-
-
-#def cumu_dist(degree_list):
-#    kmin=min(degree_list)
-#    kmax=max(degree_list)
-#    
-#    bins=[float(k-0.5) for k in range(kmin,kmax+2,1)]
-#    density, binedges = np.histogram(degree_list, bins=bins, density=True)
-#    bins = np.delete(bins, -1)
-#    
-#    logBins = np.logspace(np.log10(kmin), np.log10(kmax),num=50)
-#    logBinDensity, binedges = np.histogram(degree_list, bins=logBins, density=True)
-#    logBins = np.delete(logBins, -1)
-##    fig = plt.figure()
-##    ax = fig.add_subplot(111)
-##    ax.set_xscale('log')
-##    ax.set_yscale('log')
-##    plt.plot(bins,density,'+',color='black')
-##    plt.plot(logBins,logBinDensity,'x',color='blue')
-#    return logBins, logBinDensity
-    
-
-
-#plot cumulative distribution of degree K
-#plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
-#plt.ylabel('P')
-#plt.ylim(0.0,1.1)
-#plt.xlabel('Degree')
-#degseq=list(DG.degree(weight='weight').values())
-#logBins, logBinDensity = cumu_dist(degseq)
-#fig = plt.figure()
-#ax = fig.add_subplot(111)
-#ax.set_title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
-#ax.set_xscale('log')
-#ax.set_yscale('log')
-#plt.plot(logBins,logBinDensity,'x',color='blue')
-#dmax=max(degseq)+1
-#freq= [ 0 for d in range(dmax) ]
-#for d in degseq:
-#    freq[d] += 1
-##plt.plot(freq)
-#sumall = sum(freq)
-#cumul = []
-#temp = 0.0
-#for fre in freq:
-#    temp += fre
-#    cumul.append(temp/sumall)
-
-#plt.plot(cumul)
-#plt.show()
 
 
 #histogram of path lengths

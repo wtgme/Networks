@@ -11,11 +11,13 @@ import csv
 
 
 G = Graph()
-userps = {}  
+userps = {} 
+gw, cw = [],[] 
 
 #load user profile from file
 with open('poi.csv', 'rt') as f:
     reader = csv.reader(f)
+    first_row = next(reader)
     for row in reader:
 #        print row
         userp = {}
@@ -27,8 +29,11 @@ with open('poi.csv', 'rt') as f:
         userp['gender'] = row[8]
         userp['gw'] = row[9]
         userp['cw'] = row[10]
-#        print userp
-        userps[tokens[0]] = userp
+        if row[9]!='' and row[10]!='':
+#            print float(row[9]), float(row[10])
+            gw.append(float(row[9]))
+            cw.append(float(row[10]))
+        userps[row[0]] = userp
         del userp 
 
 # load a network from file
@@ -56,7 +61,56 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
 # draw(G, pos)
 # plt.show()
 
+def pearson(x,y):
+    n = len(x)
+    avg_x = float(sum(x))/n
+    avg_y = float(sum(y))/n
+    print avg_x, avg_y
+    diffprod = 0.0
+    xdiff2 = 0.0
+    ydiff2 = 0.0
+    for idx in range(n):
+        xdiff = x[idx] - avg_x
+        ydiff = y[idx] - avg_y
+        diffprod += xdiff*ydiff
+        xdiff2 += xdiff*xdiff
+        ydiff2 += ydiff*ydiff
+    return diffprod/math.sqrt(xdiff2*ydiff2)
 
+def drop_zeros(list_a):
+    return [i for i in list_a if i>0]
+
+def log_binning(list_x, list_y, bin_count=35):
+    max_x = np.log10(max(list_x))
+    max_y = np.log10(max(list_y))
+    min_x = np.log10(min(drop_zeros(list_x)))
+    min_y = np.log10(min(drop_zeros(list_y)))
+    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    bins_y = np.logspace(min_y, max_y, num=bin_count)
+    bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0] / (np.histogram(list_x, bins_x)[0])
+    bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0] / (np.histogram(list_y, bins_y)[0])    
+    return bin_means_x, bin_means_y
+
+
+def PD(list_x, bin_count=35):  
+    max_x = np.log10(max(list_x))
+    min_x = np.log10(min(drop_zeros(list_x)))
+    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    weights = np.ones_like(list_x)/float(len(list_x))
+    hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
+    return hist, bin_deges
+
+def CPD(list_x, bin_count=35):  
+    max_x = np.log10(max(list_x))
+    min_x = np.log10(min(drop_zeros(list_x)))
+    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    weights = np.ones_like(list_x)/float(len(list_x))
+    hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
+    cum = np.cumsum(hist[::-1])[::-1] 
+    print len(cum)
+    print len(bin_deges)
+    return cum, bin_deges
+    
 
 #network analysis
 print 'The number of nodes: %d' %(G.order())
@@ -66,106 +120,53 @@ print 'The number of edges: %d' %(G.size())
 print 'The number of self-loop: %d' %(G.number_of_selfloops())
 
 
+gwhist, gwbins = CPD(gw,50)
+gwbin_centers = (gwbins[1:]+gwbins[:-1])/2.0
+print gwhist, sum(gwhist)
+gwp, = plt.plot(gwbin_centers, gwhist, color='blue', marker='x')
+cwhist, cwbins = CPD(cw,50)
+cwbin_centers = (cwbins[1:]+cwbins[:-1])/2.0
+cwp, = plt.plot(cwbin_centers, cwhist, color='red', marker='.')
+print cwhist, sum(cwhist)
+plt.legend((gwp, cwp), ('Global-Weight','Current-Weight'), loc=4)
+plt.xscale('log')
+plt.yscale('linear')
+plt.xlabel('KG(x)')
+plt.ylabel('P(x)')
+
 #print 'The plot of in-degree and out-degree of nodes'
 #print 'Node \t In-degree \t Out-degree'
-#indegree, outdegree = [],[]
+#degree, strength = [],[]
 #for node in G.nodes():
-#    print '%s \t %d \t %d \t %d' %(node, G.in_degree(node, weight='weight'), G.out_degree(node, weight='weight'), G.degree(node, weight='weight'))
-#    indegree.append(G.in_degree(node, weight='weight'))
-#    outdegree.append(G.out_degree(node, weight='weight'))
-#
-#print 'number of nodes: %d' %(len(G.nodes()))
-#plt.scatter(indegree, outdegree, alpha=0.5)
-#plt.title('Plot of In-degree and Out-degree (reply)')
-#plt.xlabel('In-degree')
-#plt.ylabel('Out-degree')
-#plt.xlim(xmin=0.0)
-#plt.ylim(ymin=0.0)
-#plot.show()
+##    print '%s \t %d \t %d' %(node, G.degree(node), G.degree(node, weight='weight'))
+#    degree.append(G.degree(node))
+#    strength.append(G.degree(node, weight='weight'))
+
+#deg, stre = log_binning(degree, strength, 50)
+#plt.xscale('log')
+#plt.yscale('log')
+#plt.xlabel('Degree')
+#plt.ylabel('Strength')
+#plt.xlim(1, 1e4)
+#plt.ylim(1, 1e4)
+#degp = plt.scatter(deg, stre, c='r', marker='s', s=50, alpha=0.5, label='Undirected Graph(p=0.76)')
+#plt.legend(handles=[degp], loc=4)
+#print 'pearson correlation of instrength and outstrength: %f' %(pearson(degree, strength))
 
     
 
-##plot the numbers of nodes with degree K
-#plt.title('Numbers of Nodes with In-degree K Plot(mention)')
-#plt.ylabel('Number of nodes')
-#plt.xlabel('Degree')
-#degseq=list(G.in_degree(weight='weight').values())
-#print degseq
-#dmax=max(degseq)+1
-#freq= [ 0 for d in range(dmax) ]
-#for d in degseq:
-#    freq[d] += 1
-#plt.plot(freq)
-##plt.plot(list(utils.cumulative_sum(freq)))
-#plt.show()
-
-
-
-##plot cumulative distribution of degree K
-#plt.title('Cumulative Distribution of Nodes with Degree K Plot(mention)')
-#plt.ylabel('P')
-#plt.ylim(0.0,1.1)
-#plt.xlabel('Degree')
-#degseq=list(G.degree(weight='weight').values())
-#dmax=max(degseq)+1
-#freq= [ 0 for d in range(dmax) ]
-#for d in degseq:
-#    freq[d] += 1
-##plt.plot(freq)
-#sumall = sum(freq)
-#cumul = []
-#temp = 0.0
-#for fre in freq:
-#    temp += fre
-#    cumul.append(temp/sumall)
-#plt.plot(cumul)
-#plt.show()
-
-##histogram of path lengths
-#print 'source vertex {taget: length,}'
-#pathlengths = []
-#for v in G.nodes():
-#    spl = single_source_shortest_path_length(G, v)
-##    print '%s %s' %(v, spl)
-#    for p in spl.values():
-#        pathlengths.append(p)
-#print 'average shortest path length %s' %(sum(pathlengths)/len(pathlengths))
+#indcum, indbin_deges = CPD(degree, 100)
+#indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
+#indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='x')
 #
-#dist = {}
-#for p in pathlengths:
-#    v = dist.get(p,0)+1
-#    dist[p] = v
-#print 'length #paths'
-#verts = dist.keys()
-#distlist = []
-#for d in sorted(verts):
-#    distlist.append(dist[d])
-#    print '%s %d' %(d, dist[d])
-#plt.title('Plot of Shortest Path and Numbers of Paths(reply)')
-#plt.ylabel('Counts')
-#plt.xlabel('Path Length')
-##plt.ylim(ymin=-10.0)
-#plt.plot(distlist)
-
-print (is_connected(G))
-
-# print 'radius: %d' %(radius(G))
-# print 'diameter: %d' %(diameter(G))
-# print 'eccentricity: %s' %(eccentricity(G))
-# print 'center: %s' %(center(G))
-#print 'periphery: %s' %(periphery(G))
-print 'density: %s' %(density(G))
-
-#plt.title('Plot of Giant Component(reply)')
-#pos = spring_layout(G)
-#draw(G, pos, with_label=False, node_size=5)
-#Gcc = sorted(connected_component_subgraphs(G), key = len, reverse = True)
-#print 'number of components in network: %d' %(len(Gcc))
-#G0 = Gcc[0]
-#print 'the size of giant components: %d' %(G0.number_of_nodes())
-#draw_networkx_edges(G0, pos, with_labels=False, edge_color='r', width = 1.0)
-#for Gi in Gcc[1:]:
-#    if len(Gi)>1:
-#        draw_networkx_edges(Gi, pos, with_labels=False, edge_color='g', alpha=0.3,width=0.2)
-#plt.show()
-
+#inscum, insbin_deges = CPD(strength, 100)
+#insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
+#instre, = plt.plot(insbin_centers, inscum, color='red', marker='.')
+#
+#plt.legend((indegr, instre), ('Degree','Strength'), loc=3)
+#plt.xscale('log')
+#plt.yscale('log')
+#plt.xlabel('k')
+#plt.ylabel('P(k)')
+    
+    
