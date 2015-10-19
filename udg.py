@@ -7,6 +7,7 @@ Created on Thu Oct 08 16:22:26 2015
 
 from networkx import *
 import matplotlib.pyplot as plt
+import numpy as np
 import csv
 
 
