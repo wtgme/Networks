@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import scipy
 
 DG = DiGraph()
 UserDic = {}
@@ -127,49 +128,61 @@ for node in DG.nodes():
     print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
     indegree.append(DG.in_degree(node))
     outdegree.append(DG.out_degree(node))
-    instrength.append(DG.out_degree(node, weight='weight'))
+    instrength.append(DG.in_degree(node, weight='weight'))
     outstrength.append(DG.out_degree(node, weight='weight'))
 
-#bd_in, bd_out = log_binning(indegree, outdegree, 50)
-#bs_in, bs_out = log_binning(instrength, outstrength, 50)
-#plt.xscale('log')
-#plt.yscale('log')
-#plt.xlabel('In-count')
-#plt.ylabel('Out-count')
-#plt.xlim(1, 1e3+1000)
-#plt.ylim(1, 1e3+1000)
-#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
-#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
-#plt.legend((degree, strength), ('Degree(p=0.62)', 'Strength(p=1.00)'), loc='upper left')
+bd_in, bd_out = log_binning(indegree, instrength, 50)
+bs_in, bs_out = log_binning(outdegree, outstrength, 50)
 
-
-indcum, indbin_deges = CPD(indegree, 100)
-indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
-indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='*')
-
-outdcum, outdbin_deges = CPD(outdegree, 100)
-outdbin_centers = (outdbin_deges[1:]+outdbin_deges[:-1])/2.0
-outdegr, = plt.plot(outdbin_centers, outdcum, color='black', marker='+')
-
-inscum, insbin_deges = CPD(instrength, 100)
-insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
-instre, = plt.plot(insbin_centers, inscum, color='red', marker='x')
-
-outscum, outsbin_deges = CPD(outstrength, 100)
-outsbin_centers = (outsbin_deges[1:]+outsbin_deges[:-1])/2.0
-outstre, = plt.plot(outsbin_centers, outscum, color='c', marker='.', linewidth=3)
-
-plt.legend((indegr, outdegr, instre, outstre), ('In-Degree', 'Out-Degree', 'In-Strength', 'Out-Strength'), loc=3)
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(bd_in,bd_out)
+print 'slope', slope
 
 plt.xscale('log')
 plt.yscale('log')
-plt.xlabel('k')
-plt.ylabel('P(k)')
+plt.xlabel('Degree')
+plt.ylabel('Strength')
+plt.xlim(1, 1e3)
+plt.ylim(1, 1e4)
+degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
+strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
+plt.legend((degree, strength), ('In(cov(in,out) = 0.777)', 'Out(cov(in,out) = 0.721)'), loc='upper left')
 
-print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, outdegree))
-print 'pearson correlation of instrength and outstrength: %f' %(pearson(instrength, outstrength))
+
+print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
+print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
 
 
+#indcum, indbin_deges = CPD(indegree, 100)
+#indbin_centers = (indbin_deges[1:]+indbin_deges[:-1])/2.0
+#indegr, = plt.plot(indbin_centers, indcum, color='blue', marker='*')
+#
+#outdcum, outdbin_deges = CPD(outdegree, 100)
+#outdbin_centers = (outdbin_deges[1:]+outdbin_deges[:-1])/2.0
+#outdegr, = plt.plot(outdbin_centers, outdcum, color='black', marker='+')
+#
+#inscum, insbin_deges = CPD(instrength, 100)
+#insbin_centers = (insbin_deges[1:]+insbin_deges[:-1])/2.0
+#instre, = plt.plot(insbin_centers, inscum, color='red', marker='x')
+#
+#outscum, outsbin_deges = CPD(outstrength, 100)
+#outsbin_centers = (outsbin_deges[1:]+outsbin_deges[:-1])/2.0
+#outstre, = plt.plot(outsbin_centers, outscum, color='c', marker='.', linewidth=3)
+#
+#plt.legend((indegr, outdegr, instre, outstre), ('In-Degree', 'Out-Degree', 'In-Strength', 'Out-Strength'), loc=3)
+#
+#plt.xscale('log')
+#plt.yscale('log')
+#plt.xlabel('k')
+#plt.ylabel('P(k)')
+
+#print instrength[1], outstrength[1]
+##print zip(instrength, outstrength)
+#print 'pearson correlation of indegree and outdegree: %f' %(pearsonr(instrength, outstrength)[0])
+#print pearsonr(indegree, outdegree)[1]
+
+
+#print 'pearson correlation of indegree and outdegree: %f' %(pearsonr(indegree, outdegree)[0])
+#print 'pearson correlation of instrength and outstrength: %f' %(pearsonr(instrength, outstrength)[0])
 
 
 #histogram of path lengths
