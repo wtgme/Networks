@@ -87,7 +87,7 @@ def pearson(x,y):
 def drop_zeros(list_a):
     return [i for i in list_a if i>0]
 
-def log_binning(list_x, list_y, bin_count=35):
+def log_binning(list_x, list_y, bin_count=35, bins_x=None, bins_y=None):
     max_x = np.log10(max(list_x))
     max_y = np.log10(max(list_y))
     min_x = np.log10(min(drop_zeros(list_x)))
@@ -96,7 +96,7 @@ def log_binning(list_x, list_y, bin_count=35):
     bins_y = np.logspace(min_y, max_y, num=bin_count)
     bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0] / (np.histogram(list_x, bins_x)[0])
     bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0] / (np.histogram(list_y, bins_y)[0])    
-    return bin_means_x, bin_means_y
+    return bin_means_x, bin_means_y, bins_x, bins_y
 
 
 def CPD(list_x, bin_count=35):  
@@ -131,10 +131,15 @@ for node in DG.nodes():
     instrength.append(DG.in_degree(node, weight='weight'))
     outstrength.append(DG.out_degree(node, weight='weight'))
 
-bd_in, bd_out = log_binning(indegree, instrength, 50)
-bs_in, bs_out = log_binning(outdegree, outstrength, 50)
+bd_in, bd_out, bd_bin_in, bd_bin_out = log_binning(indegree, instrength, 15)
+bs_in, bs_out = log_binning(outdegree, outstrength, 15, bd_bin_in)[:2]
+
+print bd_in
+print bd_out
 
 slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(bd_in,bd_out)
+print 'slope', slope
+slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(bs_in,bs_out)
 print 'slope', slope
 
 plt.xscale('log')
