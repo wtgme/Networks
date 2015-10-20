@@ -9,6 +9,7 @@ from networkx import *
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
+import math
 
 
 G = Graph()
@@ -48,7 +49,7 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
         # reply-to mentioned
 #        if b_type == 'reply-to':
         if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
-            # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
+#            print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
             G[n1][n2]['weight'] += weightv
         else:
             G.add_edge(n1, n2, weight=weightv)
@@ -108,8 +109,8 @@ def CPD(list_x, bin_count=35):
     weights = np.ones_like(list_x)/float(len(list_x))
     hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
     cum = np.cumsum(hist[::-1])[::-1] 
-    print len(cum)
-    print len(bin_deges)
+#    print len(cum)
+#    print len(bin_deges)
     return cum, bin_deges
     
 
@@ -121,38 +122,39 @@ print 'The number of edges: %d' %(G.size())
 print 'The number of self-loop: %d' %(G.number_of_selfloops())
 
 
-gwhist, gwbins = CPD(gw,50)
-gwbin_centers = (gwbins[1:]+gwbins[:-1])/2.0
-print gwhist, sum(gwhist)
-gwp, = plt.plot(gwbin_centers, gwhist, color='blue', marker='x')
-cwhist, cwbins = CPD(cw,50)
-cwbin_centers = (cwbins[1:]+cwbins[:-1])/2.0
-cwp, = plt.plot(cwbin_centers, cwhist, color='red', marker='.')
-print cwhist, sum(cwhist)
-plt.legend((gwp, cwp), ('Global-Weight','Current-Weight'), loc=4)
-plt.xscale('log')
-plt.yscale('linear')
-plt.xlabel('KG(x)')
-plt.ylabel('P(x)')
-
-#print 'The plot of in-degree and out-degree of nodes'
-#print 'Node \t In-degree \t Out-degree'
-#degree, strength = [],[]
-#for node in G.nodes():
-##    print '%s \t %d \t %d' %(node, G.degree(node), G.degree(node, weight='weight'))
-#    degree.append(G.degree(node))
-#    strength.append(G.degree(node, weight='weight'))
-
-#deg, stre = log_binning(degree, strength, 50)
+#gwhist, gwbins = CPD(gw,50)
+#gwbin_centers = (gwbins[1:]+gwbins[:-1])/2.0
+#print gwhist, sum(gwhist)
+#gwp, = plt.plot(gwbin_centers, gwhist, color='blue', marker='x')
+#cwhist, cwbins = CPD(cw,50)
+#cwbin_centers = (cwbins[1:]+cwbins[:-1])/2.0
+#cwp, = plt.plot(cwbin_centers, cwhist, color='red', marker='.')
+#print cwhist, sum(cwhist)
+#plt.legend((gwp, cwp), ('Global-Weight','Current-Weight'), loc=4)
 #plt.xscale('log')
-#plt.yscale('log')
-#plt.xlabel('Degree')
-#plt.ylabel('Strength')
-#plt.xlim(1, 1e4)
-#plt.ylim(1, 1e4)
-#degp = plt.scatter(deg, stre, c='r', marker='s', s=50, alpha=0.5, label='Undirected Graph(p=0.76)')
-#plt.legend(handles=[degp], loc=4)
-#print 'pearson correlation of instrength and outstrength: %f' %(pearson(degree, strength))
+#plt.yscale('linear')
+#plt.xlabel('KG(x)')
+#plt.ylabel('P(x)')
+
+print 'The plot of in-degree and out-degree of nodes'
+print 'Node \t degree \t Strength'
+degree, strength = [],[]
+for node in G.nodes():
+    print '%s \t %d \t %d' %(node, G.degree(node), G.degree(node, weight='weight'))
+    degree.append(G.degree(node))
+    strength.append(G.degree(node, weight='weight'))
+
+deg, stre = log_binning(degree, strength, 50)
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Degree')
+plt.ylabel('Strength')
+plt.xlim(1, 1e4)
+plt.ylim(1, 1e4)
+degp = plt.scatter(deg, stre, c='r', marker='s', s=50, alpha=0.5, label='Undirected Graph(p=0.76)')
+plt.legend(handles=[degp])
+#plt.legend((degp), ('Undirected Graph(p=0.76)'), loc=4)
+print 'pearson correlation of instrength and outstrength: %f' %(pearson(degree, strength))
 
     
 

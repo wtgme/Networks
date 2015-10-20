@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from networkx import *
 import math
 import matplotlib.pyplot as plt
@@ -105,8 +106,8 @@ def CPD(list_x, bin_count=35):
     hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
 #    cum = np.cumsum(hist)
     cum = np.cumsum(hist[::-1])[::-1] 
-    print len(cum)
-    print len(bin_deges)
+#    print len(cum)
+#    print len(bin_deges)
     return cum, bin_deges
 
     
@@ -119,7 +120,7 @@ print 'The number of edges: %d' %(DG.size())
 print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
 print 'The plot of in-degree and out-degree of nodes'
-print 'Node \t In-degree \t Out-degree'
+print 'Node \t In \t Out \t In+Out'
 indegree, outdegree, instrength, outstrength = [],[],[],[]
 for node in DG.nodes():
     print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
