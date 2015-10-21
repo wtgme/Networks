@@ -25,23 +25,34 @@ Created on Mon Oct 12 10:40:27 2015
 #slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x,y)
 #print slope, intercept
 
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
+#import numpy as np
+#import matplotlib.pyplot as plt
+#from scipy.optimize import curve_fit
+#
+#def func(x, a, b, c):
+#    return a * np.exp(-b * x) + c
+#
+#x = np.linspace(0,4,50)
+#y = func(x, 2.5, 1.3, 0.5)
+#yn = y + 0.2*np.random.normal(size=len(x))
+#
+#popt, pcov = curve_fit(func, x, yn)
+#
+#plt.figure()
+#plt.xscale('log')
+#plt.yscale('log')
+#plt.plot(x, yn, 'ko', label="Original Noised Data")
+#plt.plot(x, func(x, *popt), 'r-', label="Fitted Curve")
+#plt.legend()
+#plt.show()
 
-def func(x, a, b, c):
-    return a * np.exp(-b * x) + c
+a = numpy.asarray(a, dtype=float)
+b = numpy.asarray(b, dtype=float)
+logA = numpy.log10(a)
+logB = numpy.log10(b)
+coefficients = numpy.polyfit(logB, logA, 1)
+polynomial = numpy.poly1d(coefficients)
+ys = polynomial(b)
+plt.plot(logB, logA)
+plt.plot(b, ys)
 
-x = np.linspace(0,4,50)
-y = func(x, 2.5, 1.3, 0.5)
-yn = y + 0.2*np.random.normal(size=len(x))
-
-popt, pcov = curve_fit(func, x, yn)
-
-plt.figure()
-plt.xscale('log')
-plt.yscale('log')
-plt.plot(x, yn, 'ko', label="Original Noised Data")
-plt.plot(x, func(x, *popt), 'r-', label="Fitted Curve")
-plt.legend()
-plt.show()

@@ -90,6 +90,7 @@ def drop_zeros(list_a):
     return [i for i in list_a if i>0]
 
 def log_binning(list_x, list_y, bin_count=35):
+#    the returned values are raw values, not logarithmic values
     max_x = np.log10(max(list_x))
     max_y = np.log10(max(list_y))
     min_x = np.log10(min(drop_zeros(list_x)))
@@ -113,7 +114,15 @@ def CPD(list_x, bin_count=35):
 #    print len(bin_deges)
     return cum, bin_deges
 
-    
+def log_fit(list_x, list_y):
+    X = np.asarray(list_x, dtype=float)
+    Y = np.asarray(list_y, dtype=float)
+    logX = np.log10(X)
+    logY = np.log10(Y)
+    coefficients = np.polyfit(logX, logY, 1)
+    polynomial = np.poly1d(coefficients)
+    Y_fit = polynomial(X)
+    return Y_fit
 
 ##network analysis
 print 'The number of nodes: %d' %(DG.order())
@@ -130,55 +139,63 @@ for node in DG.nodes():
 #    print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
     indegree.append(DG.in_degree(node))
     outdegree.append(DG.out_degree(node))
-    instrength.append(DG.in_degree(node, weight='weight')+1)
-    outstrength.append(DG.out_degree(node, weight='weight')+1)
+    instrength.append(DG.in_degree(node, weight='weight'))
+    outstrength.append(DG.out_degree(node, weight='weight'))
+
+indegree = drop_zeros(indegree)
+outdegree = drop_zeros(outdegree)
+instrength = drop_zeros(instrength)
+outstrength = drop_zeros(outstrength)
 
 #instrength.extend(outstrength)
 
-fit = powerlaw.Fit(instrength, discrete=True)
-figPDF = fit.plot_pdf(color='b', linewidth=2)
-fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF)
-print fit.power_law.alpha
-print fit.power_law.sigma
-
-fit2 = powerlaw.Fit(outstrength, discrete=True)
-figPDF2 = fit2.plot_pdf(color='r', linewidth=2)
-fit2.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF2)
-print fit2.power_law.alpha
-print fit2.power_law.sigma
-
-figPDF.set_ylabel("p(X)")
-figPDF.set_xlabel("In-degree")
-
-
-
-
+#fit = powerlaw.Fit(instrength, discrete=True)
+##figPDF = fit.plot_pdf(color='b', linewidth=2)
+##fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF)
+#print fit.power_law.alpha
+#print fit.power_law.sigma
+#
+#fit2 = powerlaw.Fit(outstrength, discrete=True)
+##figPDF2 = fit2.plot_pdf(color='r', linewidth=2)
+##fit2.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF2)
+#print fit2.power_law.alpha
+#print fit2.power_law.sigma
+#
+#figPDF.set_ylabel("p(X)")
+#figPDF.set_xlabel("In-degree")
 #figname = 'FigPDF'
 #savefig(figname+'.eps', bbox_inches='tight')
 
-#bd_in, bd_out = log_binning((indegree), (outdegree), 20)
-#bs_in, bs_out = log_binning((outstrength), (instrength), 20)
+
+bd_in, bd_out = log_binning((indegree), (outdegree), 15)
+bs_in, bs_out = log_binning((outstrength), (instrength), 15)
 
 #print bd_in
 #print bd_out
 
+
+#plt.plot(logB, logA)
+#plt.plot(bs_in, log_fit(bs_in,bs_out), 'b--')
+plt.plot(bd_out, log_fit(bd_out,bd_in), 'r--')
+
+
 #slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(bs_in,bs_out)
 #print slope, intercept
-##plt.plot(bs_in, [slope*b_in+intercept for b_in in bs_in], '--r')
-#ax.plot(bs_in, np.power(10, intercept) * np.power(bs_in, slope), '--r')
-##ax.plot(X, [m*x + c for x in X], 'r')
+#plt.plot(bs_in, [slope*b_in+intercept for b_in in bs_in], '--r')
+#plt.plot(bs_in, np.power(10, intercept) * np.power(bs_in, slope), '--r')
+#ax.plot(X, [m*x + c for x in X], 'r')
 
 #print fit_fn(bd_in)
 #
-#plt.xscale('log')
-#plt.yscale('log')
-#plt.xlabel('In')
-#plt.ylabel('Out')
-#plt.xlim(1, 1e4)
-#plt.ylim(1, 1e4)
-#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
-#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
-#plt.legend((degree, strength), ('In(cov(in,out) = 0.777)', 'Out(cov(in,out) = 0.721)'), loc='upper left')
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('In')
+plt.ylabel('Out')
+plt.xlim(1, 1e4)
+plt.ylim(1, 1e4)
+degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
+strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
+plt.legend((degree, strength), ('In(cov(in,out) = 0.777)', 'Out(cov(in,out) = 0.721)'), loc='upper left')
 
 
 #print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
