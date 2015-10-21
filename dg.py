@@ -142,8 +142,8 @@ print fit.power_law.alpha
 print fit.power_law.sigma
 
 fit2 = powerlaw.Fit(outstrength, discrete=True)
-figPDF = fit2.plot_pdf(color='r', linewidth=2)
-fit2.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF)
+figPDF2 = fit2.plot_pdf(color='r', linewidth=2)
+fit2.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF2)
 print fit2.power_law.alpha
 print fit2.power_law.sigma
 
