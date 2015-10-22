@@ -149,35 +149,22 @@ def log_fit(list_x, list_y):
     polynomial = np.poly1d(coefficients)
     print 'Polynomial:', polynomial
     logY_fit = polynomial(logX)
-    print 'Fitting RMSE', RMSE(logY, logY_fit)
+    print 'Fitting RMSE(log)', RMSE(logY, logY_fit)
+    print 'Fitting RMSE(raw)', RMSE(Y, np.power(10, logY_fit))
 #    print Y
-#    print np.power(Y_fit,10)
-    return logX, logY_fit
+    return np.power(10, logY_fit)
+#    return logX, logY_fit
     
-def plot_log_fit(list_x, list_y, x_label, y_label, num_bin=15, savename='figure'):
-    list_x_bined, list_y_bined = log_binning((list_x), (list_y), num_bin)
-    
-#    plt.plot(list_x_bined, list_y_bined,'bo', label=r"Empirical")
-#    plt.plot(list_x_bined, log_fit(list_x_bined,list_y_bined), 'b--', label=r"Fit")
-    
-    
-    fig, ax1 = plt.subplots()
-    ax1.plot(list_x_bined, list_y_bined,'bo', label=r"Empirical")
-    ax1.set_xscale('log')
-    ax1.set_yscale('log')
-    ax1.set_xlabel(x_label)
-    ax1.set_ylabel(y_label)
-    ax1.set_xlim(1, 1e4)
-    ax1.set_ylim(1, 1e4)    
-#    plt.legend(loc=4)
-#    leg = plt.legend(numpoints=3)
-    fit_x, fit_y = log_fit(list_x_bined, list_y_bined)
-    ax2 = ax1.twinx()
-    ax1.set_xscale('linear')
-    ax1.set_yscale('linear')
-    ax2.plot(fit_x, fit_y, 'b--', label=r"Fit")
+def plot_log_fit(list_x, list_y, ax=None, **kwargs):
+    if not ax:
+        plt.plot(list_x, log_fit(list_x,list_y), **kwargs)
+        ax = plt.gca()
+    else:
+        ax.plot(list_x, log_fit(list_x,list_y), **kwargs)  
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    return ax  
 
-    plt.savefig(savename+'.eps', bbox_inches='tight')
 
 ##network analysis
 print 'The number of nodes: %d' %(DG.order())
@@ -211,7 +198,24 @@ for node in DG.nodes():
 
 
 '''Log-Log fit degree and strength'''
-plot_log_fit(outstrength, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
+plt.clf()
+list_x_bined, list_y_bined = log_binning(indegree, instrength, 10)
+plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_i(k_i)$')
+ax = plt.gca()
+plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_i(k_i)$')
+
+list_x_bined, list_y_bined = log_binning(outdegree, outstrength, 10)
+ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_o(k_o)$')
+plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_o(k_o)$')
+ax.set_ylabel("s")
+ax.set_xlabel("k")
+#handles, labels = ax.get_legend_handles_labels()
+ax.legend(loc=2)
+#leg.draw_frame(False)
+#plt.savefig('.eps', bbox_inches='tight')
+
+
+#plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
 
 
 print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
