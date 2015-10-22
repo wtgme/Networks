@@ -46,8 +46,8 @@ Created on Mon Oct 12 10:40:27 2015
 #plt.legend()
 #plt.show()
 
-a = numpy.asarray(a, dtype=float)
-b = numpy.asarray(b, dtype=float)
+a = numpy.asarray([1,3,4,5], dtype=float)
+b = numpy.asarray([2,6,8,10], dtype=float)
 logA = numpy.log10(a)
 logB = numpy.log10(b)
 coefficients = numpy.polyfit(logB, logA, 1)
@@ -55,4 +55,38 @@ polynomial = numpy.poly1d(coefficients)
 ys = polynomial(b)
 plt.plot(logB, logA)
 plt.plot(b, ys)
+
+#import numpy as np
+##import pylab as pl
+#import matplotlib.pyplot as plt
+#
+#x = np.linspace(0, 2*np.pi, 100)
+#plt.plot(x, np.sin(x), "-x", label=u"sin")
+#plt.plot(x, np.random.standard_normal(len(x)), 'o', label=u"rand")
+#leg = plt.legend(numpoints=3)
+#
+#plt.show()
+
+
+#import numpy as np
+#import matplotlib.pyplot as plt
+#
+#fig, ax1 = plt.subplots()
+#t = np.arange(0.01, 10.0, 0.01)
+#s1 = np.exp(t)
+#ax1.plot(t, s1, 'b-')
+#ax1.set_xlabel('time (s)')
+## Make the y-axis label and tick labels match the line color.
+#ax1.set_ylabel('exp', color='b')
+#for tl in ax1.get_yticklabels():
+#    tl.set_color('b')
+#
+#
+#ax2 = ax1.twinx()
+#s2 = np.sin(2*np.pi*t)
+#ax2.plot(t, s2, 'r.')
+#ax2.set_ylabel('sin', color='r')
+#for tl in ax2.get_yticklabels():
+#    tl.set_color('r')
+#plt.show()
 

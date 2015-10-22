@@ -7,6 +7,7 @@ import numpy as np
 import csv
 import scipy.stats
 import powerlaw
+from sklearn.metrics import mean_squared_error
 
 
 DG = DiGraph()
@@ -74,7 +75,7 @@ def pearson(x,y):
     n = len(x)
     avg_x = float(sum(x))/n
     avg_y = float(sum(y))/n
-    print avg_x, avg_y
+    print 'The means of two lists:', avg_x, avg_y
     diffprod = 0.0
     xdiff2 = 0.0
     ydiff2 = 0.0
@@ -89,6 +90,10 @@ def pearson(x,y):
 def drop_zeros(list_a):
     return [i for i in list_a if i>0]
 
+def RMSE(predict, truth):
+    RMSE = mean_squared_error(truth, predict)**0.5
+    return RMSE
+
 def log_binning(list_x, list_y, bin_count=35):
 #    the returned values are raw values, not logarithmic values
     max_x = np.log10(max(list_x))
@@ -100,7 +105,6 @@ def log_binning(list_x, list_y, bin_count=35):
     bin_means_x = (np.histogram(list_x, bins_x, weights=list_x))[0].astype(float) / (np.histogram(list_x, bins_x)[0])
     bin_means_y = (np.histogram(list_y, bins_y, weights=list_y))[0].astype(float) / (np.histogram(list_y, bins_y)[0])    
     return bin_means_x, bin_means_y
-
 
 def CPD(list_x, bin_count=35):  
     max_x = np.log10(max(list_x))
@@ -114,6 +118,28 @@ def CPD(list_x, bin_count=35):
 #    print len(bin_deges)
     return cum, bin_deges
 
+def power_law_fit(list_x, label_x, savename='figure', list_y = None, Label_y = ''):
+    plt.clf()
+    fit = powerlaw.Fit(list_x, discrete=True)
+    figPDF = fit.plot_pdf(color='b', linewidth=2, label=r"Empirical, "+label_x)
+    fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF, label=r"Fit, "+label_x)
+    print 'alpha:', fit.power_law.alpha
+    print 'error:', fit.power_law.sigma
+    
+    if list_y != None:
+        fit = powerlaw.Fit(list_y, discrete=True)
+        fit.plot_pdf(color='r', linewidth=2, ax=figPDF, label=r"Empirical, "+Label_y)
+        fit.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF, label=r"Fit, "+Label_y)
+        print 'alpha:', fit.power_law.alpha
+        print 'error:', fit.power_law.sigma
+    
+    figPDF.set_ylabel("p(k)")
+    figPDF.set_xlabel("k")
+    handles, labels = figPDF.get_legend_handles_labels()
+    leg = figPDF.legend(handles, labels, loc=3)
+    leg.draw_frame(False)
+    plt.savefig(savename+'.eps', bbox_inches='tight')
+
 def log_fit(list_x, list_y):
     X = np.asarray(list_x, dtype=float)
     Y = np.asarray(list_y, dtype=float)
@@ -121,8 +147,37 @@ def log_fit(list_x, list_y):
     logY = np.log10(Y)
     coefficients = np.polyfit(logX, logY, 1)
     polynomial = np.poly1d(coefficients)
-    Y_fit = polynomial(X)
-    return Y_fit
+    print 'Polynomial:', polynomial
+    logY_fit = polynomial(logX)
+    print 'Fitting RMSE', RMSE(logY, logY_fit)
+#    print Y
+#    print np.power(Y_fit,10)
+    return logX, logY_fit
+    
+def plot_log_fit(list_x, list_y, x_label, y_label, num_bin=15, savename='figure'):
+    list_x_bined, list_y_bined = log_binning((list_x), (list_y), num_bin)
+    
+#    plt.plot(list_x_bined, list_y_bined,'bo', label=r"Empirical")
+#    plt.plot(list_x_bined, log_fit(list_x_bined,list_y_bined), 'b--', label=r"Fit")
+    
+    
+    fig, ax1 = plt.subplots()
+    ax1.plot(list_x_bined, list_y_bined,'bo', label=r"Empirical")
+    ax1.set_xscale('log')
+    ax1.set_yscale('log')
+    ax1.set_xlabel(x_label)
+    ax1.set_ylabel(y_label)
+    ax1.set_xlim(1, 1e4)
+    ax1.set_ylim(1, 1e4)    
+#    plt.legend(loc=4)
+#    leg = plt.legend(numpoints=3)
+    fit_x, fit_y = log_fit(list_x_bined, list_y_bined)
+    ax2 = ax1.twinx()
+    ax1.set_xscale('linear')
+    ax1.set_yscale('linear')
+    ax2.plot(fit_x, fit_y, 'b--', label=r"Fit")
+
+    plt.savefig(savename+'.eps', bbox_inches='tight')
 
 ##network analysis
 print 'The number of nodes: %d' %(DG.order())
@@ -137,10 +192,11 @@ indegree, outdegree, instrength, outstrength = [],[],[],[]
 for node in DG.nodes():
 #    print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
 #    print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))   
-    indegree.append(DG.in_degree(node)+1)
-    outdegree.append(DG.out_degree(node)+1)
-    instrength.append(DG.in_degree(node, weight='weight')+1)
-    outstrength.append(DG.out_degree(node, weight='weight')+1)
+    in_d, out_d, in_s, out_s = DG.in_degree(node), DG.out_degree(node), DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight')
+    indegree.append(in_d)
+    outdegree.append(out_d)
+    instrength.append(in_s)
+    outstrength.append(out_s)
 
 #indegree = drop_zeros(indegree)
 #outdegree = drop_zeros(outdegree)
@@ -149,52 +205,13 @@ for node in DG.nodes():
 
 #instrength.extend(outstrength)
 
-fit = powerlaw.Fit(indegree, discrete=True)
-figPDF = fit.plot_pdf(color='b', linewidth=2, label=r"Empirical, no $x_{max}$")
-fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF, label=r"Empirical, no $x_{max}$")
-print 'alpha:', fit.power_law.alpha
-print 'error:', fit.power_law.sigma
-
-fit2 = powerlaw.Fit(outdegree, discrete=True)
-fit2.plot_pdf(color='r', linewidth=2, ax=figPDF, label=r"Empirical, no $x_{max}$")
-fit2.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF, label=r"Empirical, no $x_{max}$")
-print 'alpha:', fit2.power_law.alpha
-print 'error:', fit2.power_law.sigma
-
-figPDF.set_ylabel("P(X)")
-figPDF.set_xlabel("In-degree")
-plt.savefig('degreepdf.eps', bbox_inches='tight')
+'''Power-law Fitting'''
+#power_law_fit(indegree, 'in-degree', 'degreepdf1')
+#power_law_fit(indegree, 'in-degree', 'degreepdf1',outdegree,'out-degree')
 
 
-#bd_in, bd_out = log_binning((indegree), (outdegree), 15)
-#bs_in, bs_out = log_binning((outstrength), (instrength), 15)
-
-#print bd_in
-#print bd_out
-
-
-#plt.plot(logB, logA)
-#plt.plot(bs_in, log_fit(bs_in,bs_out), 'b--')
-#plt.plot(bd_out, log_fit(bd_out,bd_in), 'r--')
-
-
-#slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(bs_in,bs_out)
-#print slope, intercept
-#plt.plot(bs_in, [slope*b_in+intercept for b_in in bs_in], '--r')
-#plt.plot(bs_in, np.power(10, intercept) * np.power(bs_in, slope), '--r')
-#ax.plot(X, [m*x + c for x in X], 'r')
-
-#print fit_fn(bd_in)
-#
-#plt.xscale('log')
-#plt.yscale('log')
-#plt.xlabel('In')
-#plt.ylabel('Out')
-#plt.xlim(1, 1e4)
-#plt.ylim(1, 1e4)
-#degree = plt.scatter(bd_in, bd_out, c='r', marker='s', s=50, alpha=0.5)
-#strength = plt.scatter(bs_in, bs_out, c='b', marker='o', s=50, alpha=0.5)
-#plt.legend((degree, strength), ('In(cov(in,out) = 0.777)', 'Out(cov(in,out) = 0.721)'), loc='upper left')
+'''Log-Log fit degree and strength'''
+plot_log_fit(outstrength, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
 
 
 print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
