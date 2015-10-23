@@ -27,8 +27,24 @@ class User(object):
     
 
 # load a network from file
+
+#with open('mrredges-no-tweet-no-retweet-poi-counted.csv', 'rt') as f:
+#    reader = csv.reader(f)
+#    first_row = next(reader)
+#    for row in reader:
+#        u1 = row[0]
+#        u2 = row[1]
+#        btype = row[2]
+#        count = row[3]
+#        userID = userIdMap.get(u1,len(userIdMap))
+#        userIdMap[u1] = userID
+#        userID = userIdMap.get(u2,len(userIdMap))
+#        userIdMap[u2] = userID
+#        print u1, u2, btype, count
+        
 with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
     for line in fo.readlines():
+        i +=1
         tokens = line.split(',')
         n1 = (tokens[0])
         n2 = (tokens[1])
@@ -39,8 +55,12 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
             DG[n1][n2]['weight'] += weightv
         else:
             DG.add_edge(n1, n2, weight=weightv)
+A = adjacency_matrix(DG)
+B = adjacency_matrix(DG, weight=None)
+print A
+print '-----------------------'
+print B
 
-        
 # pos = random_layout(DG)
 # pos = shell_layout(DG)
 #pos = spring_layout(DG)
@@ -198,21 +218,21 @@ for node in DG.nodes():
 
 
 '''Log-Log fit degree and strength'''
-plt.clf()
-list_x_bined, list_y_bined = log_binning(instrength, outstrength, 12)
-plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_o(s_i)$')
-ax = plt.gca()
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_o(s_i)$')
-
-list_x_bined, list_y_bined = log_binning(outstrength, instrength, 12)
-ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_i(s_o)$')
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_i(s_o)$')
-ax.set_ylabel("s")
-ax.set_xlabel("s")
-#handles, labels = ax.get_legend_handles_labels()
-ax.legend(loc=2)
-#leg.draw_frame(False)
-plt.savefig('ss.eps', bbox_inches='tight')
+#plt.clf()
+#list_x_bined, list_y_bined = log_binning(instrength, outstrength, 12)
+#plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_o(s_i)$')
+#ax = plt.gca()
+#plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_o(s_i)$')
+#
+#list_x_bined, list_y_bined = log_binning(outstrength, instrength, 12)
+#ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_i(s_o)$')
+#plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_i(s_o)$')
+#ax.set_ylabel("s")
+#ax.set_xlabel("s")
+##handles, labels = ax.get_legend_handles_labels()
+#ax.legend(loc=2)
+##leg.draw_frame(False)
+#plt.savefig('ss.eps', bbox_inches='tight')
 
 
 #plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
