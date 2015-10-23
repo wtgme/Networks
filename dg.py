@@ -199,20 +199,20 @@ for node in DG.nodes():
 
 '''Log-Log fit degree and strength'''
 plt.clf()
-list_x_bined, list_y_bined = log_binning(indegree, instrength, 10)
-plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_i(k_i)$')
+list_x_bined, list_y_bined = log_binning(instrength, outstrength, 12)
+plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_o(s_i)$')
 ax = plt.gca()
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_i(k_i)$')
+plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_o(s_i)$')
 
-list_x_bined, list_y_bined = log_binning(outdegree, outstrength, 10)
-ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_o(k_o)$')
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_o(k_o)$')
+list_x_bined, list_y_bined = log_binning(outstrength, instrength, 12)
+ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_i(s_o)$')
+plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_i(s_o)$')
 ax.set_ylabel("s")
-ax.set_xlabel("k")
+ax.set_xlabel("s")
 #handles, labels = ax.get_legend_handles_labels()
 ax.legend(loc=2)
 #leg.draw_frame(False)
-#plt.savefig('.eps', bbox_inches='tight')
+plt.savefig('ss.eps', bbox_inches='tight')
 
 
 #plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
