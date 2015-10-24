@@ -44,7 +44,6 @@ class User(object):
         
 with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
     for line in fo.readlines():
-        i +=1
         tokens = line.split(',')
         n1 = (tokens[0])
         n2 = (tokens[1])
@@ -55,11 +54,21 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
             DG[n1][n2]['weight'] += weightv
         else:
             DG.add_edge(n1, n2, weight=weightv)
-A = adjacency_matrix(DG)
-B = adjacency_matrix(DG, weight=None)
+
+A = adjacency_matrix(DG, weight=None)
+#A = adjacency_matrix(DG)
 print A
-print '-----------------------'
-print B
+Ade = A.todense()
+
+Nlist = map(int, DG.nodes())
+
+with open('degree_adjacency_matrix.csv', 'wb') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=',',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow([0]+Nlist)
+    for index in xrange(len(Nlist)):
+        spamwriter.writerow([Nlist[index]] + Ade[index].getA1().tolist())
+
 
 # pos = random_layout(DG)
 # pos = shell_layout(DG)
@@ -238,8 +247,8 @@ for node in DG.nodes():
 #plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
 
 
-print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
-print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
+#print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
+#print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
 
 
 #indcum, indbin_deges = CPD(indegree, 100)
