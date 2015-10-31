@@ -9,6 +9,7 @@ import scipy.stats
 import powerlaw
 from sklearn.metrics import mean_squared_error
 import os
+import re
 
 
 DG = DiGraph()
@@ -61,7 +62,7 @@ with open(file_path, 'r') as fo:
 
 A = adjacency_matrix(DG, weight=None)
 #A = adjacency_matrix(DG)
-print A
+# print A
 Ade = A.todense()
 
 Nlist = map(int, DG.nodes())
@@ -70,7 +71,17 @@ with open('degree_adjacency_matrix.csv', 'wb') as csvfile:
     spamwriter = csv.writer(csvfile, delimiter=',',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
     spamwriter.writerow([0]+Nlist)
-    for index in xrange(len(Nlist)):
+for index in xrange(len(Nlist)):
+    # print poi.get(str(Nlist[index]))
+    spamwriter.writerow(poi.get(str(Nlist[index]), None))
+
+
+
+# with open('degree_adjacency_matrix.csv', 'wb') as csvfile:
+#     spamwriter = csv.writer(csvfile, delimiter=',',
+#                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
+#     spamwriter.writerow([0]+Nlist)
+#     for index in xrange(len(Nlist)):
         spamwriter.writerow([Nlist[index]] + Ade[index].getA1().tolist())
 
 
@@ -86,23 +97,7 @@ with open('degree_adjacency_matrix.csv', 'wb') as csvfile:
 #draw(DG, pos)
 #plt.show()
 
-with open('poi.csv', 'rt') as f:
-    reader = csv.reader(f)
-    first_row = next(reader)
-    for row in reader:
-#        print row
-        userp = {}
-        userp['screem_name'] = row[1]
-        userp['datetime'] = row[2]
-        userp['descrip'] = row[3]
-        userp['lan'] = row[6]
-        userp['location'] = row[7]
-        userp['gender'] = row[8]
-        userp['gw'] = row[9]
-        userp['cw'] = row[10]
-#        print userp
-        userps[row[0]] = userp
-        del userp 
+
 
 def pearson(x,y):
     n = len(x)
