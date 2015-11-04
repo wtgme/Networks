@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 import math
+import os
 
 
 G = Graph()
@@ -17,7 +18,8 @@ userps = {}
 gw, cw = [],[] 
 
 #load user profile from file
-with open('poi.csv', 'rt') as f:
+file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/poi.csv'
+with open(file_path, 'rt') as f:
     reader = csv.reader(f)
     first_row = next(reader)
     for row in reader:
@@ -39,20 +41,22 @@ with open('poi.csv', 'rt') as f:
         del userp 
 
 # load a network from file
-with open('mrredges-no-tweet-no-retweet-poi-counted.txt', 'r') as fo:
-    for line in fo.readlines():
-        tokens = line.split(',')
-        n1 = (tokens[0])
-        n2 = (tokens[1])
-        b_type = tokens[2]
-        weightv = int(tokens[3])
+file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/mrredges-no-tweet-no-retweet-poi-counted.csv'
+with open(file_path, 'rt') as fo:
+    reader = csv.reader(fo)
+    first_row = next(reader)
+    for row in reader:
+        n1 = (row[0])
+        n2 = (row[1])
+        b_type = row[2]
+        weightv = int(row[3])
         # reply-to mentioned
-#        if b_type == 'reply-to':
         if (G.has_node(n1)) and (G.has_node(n2)) and (G.has_edge(n1, n2)):
-#            print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
+           # print n1, n2, G.has_node(n1), G.has_node(n2), G.has_edge(n1,n2), weightv, G[n2]
             G[n1][n2]['weight'] += weightv
         else:
             G.add_edge(n1, n2, weight=weightv)
+
             
     
         
