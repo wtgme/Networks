@@ -66,11 +66,23 @@ A = adjacency_matrix(DG, weight=None)
 Ade = A.todense()
 
 Nlist = map(int, DG.nodes())
+print len(Nlist)
 
-with open('degree_adjacency_matrix.csv', 'wb') as csvfile:
-    spamwriter = csv.writer(csvfile, delimiter=',',
-                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
-    spamwriter.writerow([0]+Nlist)
+poi = {}
+f = open('poi.csv', 'rb')
+reader = csv.reader(f, lineterminator='\n')
+first_row = next(reader)
+for row in reader:
+    des = row[3]
+    row[3] = des.replace('\n', ' ').replace('\r', ' ').replace('\r\n', ' ').replace('\n\r', ' ')
+    # print '-------------'
+    # print row[3]
+    poi[row[0]] = row
+
+print 'Output poi'
+csvfile = open('targeted-poi.csv', 'wb')
+spamwriter = csv.writer(csvfile)
+spamwriter.writerow(first_row)
 for index in xrange(len(Nlist)):
     # print poi.get(str(Nlist[index]))
     spamwriter.writerow(poi.get(str(Nlist[index]), None))
@@ -82,7 +94,7 @@ for index in xrange(len(Nlist)):
 #                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
 #     spamwriter.writerow([0]+Nlist)
 #     for index in xrange(len(Nlist)):
-        spamwriter.writerow([Nlist[index]] + Ade[index].getA1().tolist())
+#         spamwriter.writerow([Nlist[index]] + Ade[index].getA1().tolist())
 
 
 # pos = random_layout(DG)
