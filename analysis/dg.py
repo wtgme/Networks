@@ -5,11 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
-import scipy.stats
 import powerlaw
 from sklearn.metrics import mean_squared_error
 import os
-import re
 
 
 DG = DiGraph()
@@ -44,7 +42,7 @@ class User(object):
 #        userIdMap[u2] = userID
 #        print u1, u2, btype, count
 
-# file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/mrredges-no-tweet-no-retweet-poi-counted.txt'
+file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/mrredges-no-tweet-no-retweet-poi-counted.txt'
 print os.path.dirname(__file__).split(os.sep)[:-1]
 print os.path.abspath(os.path.join(os.path.abspath(__file__), os.pardir))
 with open(file_path, 'r') as fo:
@@ -69,7 +67,9 @@ Nlist = map(int, DG.nodes())
 print len(Nlist)
 
 poi = {}
-f = open('poi.csv', 'rb')
+file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/poi.csv'
+
+f = open(file_path, 'rb')
 reader = csv.reader(f, lineterminator='\n')
 first_row = next(reader)
 for row in reader:
@@ -79,13 +79,13 @@ for row in reader:
     # print row[3]
     poi[row[0]] = row
 
-print 'Output poi'
-csvfile = open('targeted-poi.csv', 'wb')
-spamwriter = csv.writer(csvfile)
-spamwriter.writerow(first_row)
-for index in xrange(len(Nlist)):
-    # print poi.get(str(Nlist[index]))
-    spamwriter.writerow(poi.get(str(Nlist[index]), None))
+# print 'Output poi'
+# csvfile = open('targeted-poi.csv', 'wb')
+# spamwriter = csv.writer(csvfile)
+# spamwriter.writerow(first_row)
+# for index in xrange(len(Nlist)):
+#     # print poi.get(str(Nlist[index]))
+#     spamwriter.writerow(poi.get(str(Nlist[index]), None))
 
 
 
