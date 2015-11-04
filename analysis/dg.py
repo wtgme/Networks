@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
+"""
+Created on 5:56 PM, 11/4/15
 
+@author: wt
+
+"""
 from networkx import *
 import math
 import matplotlib.pyplot as plt
 import numpy as np
 import csv
-import powerlaw
+import mypowerlaw as powerlaw
 from sklearn.metrics import mean_squared_error
 import os
 
@@ -121,14 +126,14 @@ def rmse(predict, truth):
     return RMSE
 
 
-def CPD(list_x, bin_count=35):  
+def CPD(list_x, bin_count=35):
     max_x = np.log10(max(list_x))
     min_x = np.log10(min(drop_zeros(list_x)))
     bins_x = np.logspace(min_x, max_x, num=bin_count)
     weights = np.ones_like(list_x)/float(len(list_x))
     hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
     # cum = np.cumsum(hist)
-    cum = np.cumsum(hist[::-1])[::-1] 
+    cum = np.cumsum(hist[::-1])[::-1]
     # print len(cum)
     # print len(bin_deges)
     return cum, bin_deges
@@ -163,10 +168,32 @@ def log_fit(list_x, list_y):
     # return logX, logY_fit
 
 
-def power_law_fit_ls(data):
+def plot_log_fit(list_x, list_y, ax=None, **kwargs):
+    if not ax:
+        plt.plot(list_x, log_fit(list_x,list_y), **kwargs)
+        ax = plt.gca()
+    else:
+        ax.plot(list_x, log_fit(list_x,list_y), **kwargs)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    return ax
+
+
+def log_pmd(data, number_bin):
     data = drop_zeros(data)
-    minx = min(data)
-    maxx = min(data)
+    minx = np.log10(min(data))
+    maxx = np.log10(max(data))
+    # example meaning: np.logspace(2.0, 3.0, num=4)--->array([  100.  ,   215.443469  ,   464.15888336,  1000.        ])
+    binsx = np.logspace(minx, maxx, num=number_bin)
+    counts = np.histogram(data, binsx)[0]
+    means = (binsx[1:]+binsx[:-1])/2.0
+    p = [float(c)/sum(counts) for c in counts]
+    new_p, new_means = [], []
+    for index in xrange(len(p)):
+        if p[index] != 0.0:
+            new_p.append(p[index])
+            new_means.append(means[index])
+    return (new_means, new_p)
 
 
 def power_law_fit(list_x, label_x, savename='figure', list_y = None, Label_y = ''):
@@ -176,32 +203,21 @@ def power_law_fit(list_x, label_x, savename='figure', list_y = None, Label_y = '
     fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF, label=r"Fit, "+label_x)
     print 'alpha:', fit.power_law.alpha
     print 'error:', fit.power_law.sigma
-    
+
     if list_y != None:
         fit = powerlaw.Fit(list_y, discrete=True)
         fit.plot_pdf(color='r', linewidth=2, ax=figPDF, label=r"Empirical, "+Label_y)
         fit.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF, label=r"Fit, "+Label_y)
         print 'alpha:', fit.power_law.alpha
         print 'error:', fit.power_law.sigma
-    
+
     figPDF.set_ylabel("p(k)")
     figPDF.set_xlabel("k")
     handles, labels = figPDF.get_legend_handles_labels()
     leg = figPDF.legend(handles, labels, loc=3)
     leg.draw_frame(False)
-    plt.savefig(savename+'.eps', bbox_inches='tight')
-
-
-
-def plot_log_fit(list_x, list_y, ax=None, **kwargs):
-    if not ax:
-        plt.plot(list_x, log_fit(list_x,list_y), **kwargs)
-        ax = plt.gca()
-    else:
-        ax.plot(list_x, log_fit(list_x,list_y), **kwargs)  
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    return ax  
+    plt.show()
+    # plt.savefig(savename+'.eps', bbox_inches='tight')
 
 
 # network analysis
@@ -224,6 +240,11 @@ for node in DG.nodes():
     instrength.append(in_s)
     outstrength.append(out_s)
 
+
+log_pmd(indegree, 30)
+log_pmd(instrength, 30)
+
+
 # indegree = drop_zeros(indegree)
 # outdegree = drop_zeros(outdegree)
 # instrength = drop_zeros(instrength)
@@ -232,38 +253,48 @@ for node in DG.nodes():
 # instrength.extend(outstrength)
 
 '''Power-law Fitting'''
-power_law_fit(indegree, 'in-degree', 'degreepdf1')
-power_law_fit(indegree, 'in-degree', 'degreepdf1',outdegree,'out-degree')
+# power_law_fit(indegree, 'in-degree', 'degreepdf1')
+# power_law_fit(indegree, 'in-degree', 'degreepdf1',outdegree,'out-degree')
+
+
+plt.clf()
+rangx, proy = log_pmd(indegree, 30)
+plt.plot(rangx, proy, 'bo', label='Empirical, indegree')
+ax = plt.gca()
+plot_log_fit(rangx, proy, ax=ax, color='b', linestyle='--',label='Fit, indegree')
+rangx, proy = log_pmd(outdegree, 30)
+ax.plot(rangx, proy, 'ro', label='Empirical, outdegree')
+plot_log_fit(rangx, proy, ax=ax, color='r', linestyle='--',label='Fit, outdegree')
 
 
 '''Log-Log fit degree and strength'''
-plt.clf()
-list_x_bined, list_y_bined = log_binning(instrength, outstrength, 12)
-plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_o(s_i)$')
-ax = plt.gca()
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_o(s_i)$')
-
-list_x_bined, list_y_bined = log_binning(outstrength, instrength, 12)
-ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_i(s_o)$')
-plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_i(s_o)$')
-ax.set_ylabel("s")
-ax.set_xlabel("s")
-# handles, labels = ax.get_legend_handles_labels()
-ax.legend(loc=2)
-# leg.draw_frame(False)
-plt.savefig('ss.eps', bbox_inches='tight')
-
-
-plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
+# plt.clf()
+# list_x_bined, list_y_bined = log_binning(instrength, outstrength, 12)
+# plt.plot(list_x_bined, list_y_bined, 'bo', label='Empirical, $s_o(s_i)$')
+# ax = plt.gca()
+# plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='b', linestyle='--',label='Fit, $s_o(s_i)$')
+#
+# list_x_bined, list_y_bined = log_binning(outstrength, instrength, 12)
+# ax.plot(list_x_bined, list_y_bined, 'ro',label='Empirical, $s_i(s_o)$')
+# plot_log_fit(list_x_bined, list_y_bined, ax=ax, color='r', linestyle='--', label='Fit, $s_i(s_o)$')
+# ax.set_ylabel("s")
+# ax.set_xlabel("s")
+# # handles, labels = ax.get_legend_handles_labels()
+# ax.legend(loc=2)
+# # leg.draw_frame(False)
+# plt.savefig('ss.eps', bbox_inches='tight')
+plt.show()
 
 
-print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
-print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
+# plot_log_fit(indegree, instrength, 'in-strength', 'out-strength', 15, 'strenghtlogfit')
 
 
-print 'radius: %d' %(radius(DG))
-print 'diameter: %d' %(diameter(DG))
-print 'eccentricity: %s' %(eccentricity(DG))
-print 'center: %s' %(center(DG))
-print 'periphery: %s' %(periphery(DG))
-print 'density: %s' %(density(DG))
+# print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
+# print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
+#
+# print 'radius: %d' %(radius(DG))
+# print 'diameter: %d' %(diameter(DG))
+# print 'eccentricity: %s' %(eccentricity(DG))
+# print 'center: %s' %(center(DG))
+# print 'periphery: %s' %(periphery(DG))
+# print 'density: %s' %(density(DG))
