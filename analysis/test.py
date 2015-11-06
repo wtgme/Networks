@@ -143,14 +143,38 @@ Created on Mon Oct 12 10:40:27 2015
 #     # Print the results. They should be really close to your actual values
 #     print results.x
 
-import networkx as nx
-G = nx.DiGraph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
-G.add_edge(0, 2)
-G.add_edge(0, 1)
-G.add_edge(0, 3)
-G.add_edge(1, 3)
-G.add_edge(1,0)
+# import networkx as nx
+# G = nx.DiGraph()   # or DiGraph, MultiGraph, MultiDiGraph, etc
+# G.add_edge(0, 2)
+# G.add_edge(0, 1)
+# G.add_edge(0, 3)
+# G.add_edge(1, 3)
+# G.add_edge(1,0)
+#
+# print G.predecessors(0)
+# print G.predecessors(2)
+# print G.successors(2)
 
-print G.predecessors(0)
-print G.predecessors(2)
-print G.successors(2)
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+x = np.random.normal(size=37)
+
+density, bins = np.histogram(x, density=True)
+unity_density = density / density.sum()
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex=True, figsize=(8,4))
+widths = bins[:-1] - bins[1:]
+ax1.bar(bins[1:], density, width=widths)
+ax2.bar(bins[1:], density.cumsum(), width=widths)
+
+ax3.bar(bins[1:], unity_density, width=widths)
+ax4.bar(bins[1:], unity_density.cumsum(), width=widths)
+
+ax1.set_ylabel('Not normalized')
+ax3.set_ylabel('Normalized')
+ax3.set_xlabel('PDFs')
+ax4.set_xlabel('CDFs')
+fig.tight_layout()
+plt.show()

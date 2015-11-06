@@ -13,6 +13,7 @@ import csv
 from sklearn.metrics import mean_squared_error
 import os
 from collections import Counter
+import powerlaw
 from scipy.optimize import minimize
 import scipy.stats as stats
 
@@ -140,17 +141,53 @@ def CPD(list_x, bin_count=35):
     # print len(bin_deges)
     return cum, bin_deges
 
+def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
+    if not xmax:
+        xmax = max(data)
+    if not xmin:
+        xmin = min(data)
+    if linear_bins:
+        bins = range(int(xmin), int(xmax))
+    else:
+        log_min_size = np.log10(xmin)
+        log_max_size = np.log10(xmax)
+        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+        bins=np.unique(
+                np.floor(
+                    np.logspace(
+                        log_min_size, log_max_size, num=number_of_bins)))
+    hist, edges = np.histogram(data, bins, density=True)
+    return edges, hist
+
+def plot_pdf(data, ax=None, linear_bins=False, **kwargs):
+    edges, hist = pdf(data, linear_bins=linear_bins, **kwargs)
+    bin_centers = (edges[1:]+edges[:-1])/2.0
+    hist[hist==0] = np.nan
+    print sum(hist)
+    print np.sum(hist*np.diff(edges))
+    if not ax:
+        plt.plot(bin_centers, hist, 'bo', **kwargs)
+        ax = plt.gca()
+    else:
+        ax.plot(bin_centers, hist, 'bo', **kwargs)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    return ax
 
 def log_binning(list_x, list_y, bin_count=35):
     # the returned values are raw values, not logarithmic values
     size = len(list_x)
-    max_x = np.log10(max(list_x)+1)
-    min_x = np.log10(min(drop_zeros(list_x)))
-    bins_x = np.logspace(min_x, max_x, num=bin_count)
+    log_min_size = np.log10(min(list_x))
+    log_max_size = np.log10(max(list_x))
+    number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+    bins_x = np.unique(np.floor(np.logspace(log_min_size, log_max_size, num=number_of_bins)))
+    # max_x = np.log10(max(list_x)+1)
+    # min_x = np.log10(min(drop_zeros(list_x)))
+    # bins_x = np.logspace(min_x, max_x, num=bin_count)
     new_bin_meanx_x, new_bin_means_y = [], []
     count_x = np.histogram(list_x, bins_x)[0]
     count_x_weight = np.histogram(list_x, bins_x, weights=list_x)[0].astype(float)
-    for index in xrange(bin_count-1):
+    for index in xrange(len(bins_x)-1):
         if count_x[index] != 0:
             new_bin_meanx_x.append(count_x_weight[index]/count_x[index])
             range_min, range_max = bins_x[index], bins_x[index+1]
@@ -242,8 +279,8 @@ def pmd(data):
 def power_law_fit_ls(data, name, bin_count=30, ax=None, color='r', **kwargs):
     # data = drop_zeros(data)
     klist, plist = pmd(data)
-    print klist
-    print plist
+    # print klist
+    # print plist
     if not ax:
         plt.scatter(klist, plist, c=color, s=30, alpha=0.4,marker='+', label='Raw '+name)
         ax = plt.gca()
@@ -252,16 +289,17 @@ def power_law_fit_ls(data, name, bin_count=30, ax=None, color='r', **kwargs):
     kmeans, pmeans = log_binning(klist, plist, bin_count)
     ax.scatter(kmeans, pmeans, c=color, s=50, marker='o', label='Binned '+name)
     '''whole fitting'''
-    # fit_x, fit_y = log_fit_ls(kmeans, pmeans)
-    # ax.plot(fit_x, fit_y, c=color, linewidth=2, linestyle='--', label='Fitted '+name)
+    fit_x, fit_y = log_fit_ls(kmeans, pmeans)
+    ax.plot(fit_x, fit_y, c=color, linewidth=2, linestyle='--', label='Fitted '+name)
 
     '''Split fitting'''
-    fit_x, fit_y = log_fit_ls(kmeans, pmeans, -1, 10)
-    ax.plot(fit_x, fit_y, c=color, linewidth=2,linestyle='-', label='Fitted 1 '+name)
-    fit_x, fit_y = log_fit_ls(kmeans, pmeans, 10, 500)
-    ax.plot(fit_x, fit_y, c='r',linewidth=2, linestyle='-', label='Fitted 2 '+name)
+    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, -1, 10)
+    # ax.plot(fit_x, fit_y, c=color, linewidth=2,linestyle='-', label='Fitted 1 '+name)
+    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, 10, 500)
+    # ax.plot(fit_x, fit_y, c='r',linewidth=2, linestyle='-', label='Fitted 2 '+name)
     # fit_x, fit_y = log_fit_ls(kmeans, pmeans, 100, 200)
     # ax.plot(fit_x, fit_y, c='g',linewidth=2, linestyle='-', label='Fitted 3 '+name)
+
     return ax
 
 
@@ -345,9 +383,11 @@ def deg_str_fit(lista, l, xlabel, ylabel, bin_count=50):
     leg.draw_frame(False)
     plt.show()
 
+
 # deg_str_fit(indegree,'indegree','k','p(k)', 50)
 # deg_str_fit(outdegree,'outdegree','k','p(k)', 50)
 # deg_str_fit(instrength,'instrength','s','p(s)', 70)
+plot_pdf(instrength)
 # deg_str_fit(outstrength,'outstrength','s','p(s)', 70)
 
 
@@ -407,36 +447,11 @@ def dependence(listx, listy, l, xlabel, ylabel, bin_count=30):
 # print 'periphery: %s' %(periphery(DG))
 # print 'density: %s' %(density(DG))
 
-
-# using the powerlaw lib
-# def power_law_fit(list_x, label_x, savename='figure', list_y = None, Label_y = '', ax=None, **kwargs):
-#     if not ax:
-#         plt.plot(list_x, log_fit(list_x,list_y), **kwargs)
-#         ax = plt.gca()
-#     else:
-#         ax.plot(list_x, log_fit(list_x,list_y), **kwargs)
-#     plt.clf()
-#     fit = powerlaw.Fit(list_x, discrete=True)
-#     figPDF = fit.plot_pdf(color='b', linewidth=2, label=r"Empirical, "+label_x)
-#     fit.power_law.plot_pdf(color='b', linestyle='--', ax=figPDF, label=r"Fit, "+label_x)
-#     print 'alpha:', fit.power_law.alpha
-#     print 'error:', fit.power_law.sigma
-#
-#     if list_y != None:
-#         fit = powerlaw.Fit(list_y, discrete=True)
-#         fit.plot_pdf(color='r', linewidth=2, ax=figPDF, label=r"Empirical, "+Label_y)
-#         fit.power_law.plot_pdf(color='r', linestyle='--', ax=figPDF, label=r"Fit, "+Label_y)
-#         print 'alpha:', fit.power_law.alpha
-#         print 'error:', fit.power_law.sigma
-#
-#     figPDF.set_ylabel("p(k)")
-#     figPDF.set_xlabel("k")
-#     handles, labels = figPDF.get_legend_handles_labels()
-#     leg = figPDF.legend(handles, labels, loc=3)
-#     leg.draw_frame(False)
-#     plt.show()
-#     # plt.savefig(savename+'.eps', bbox_inches='tight')
-
-'''Power-law Fitting'''
-# power_law_fit(indegree, 'in-degree', outdegree, 'out-degree', 'degreepdf1')
-# power_law_fit(indegree, 'in-degree', 'degreepdf1',outdegree,'out-degree')
+# klist, plist = pmd(instrength)
+# fit = powerlaw.Fit(instrength)
+# print 'powerlaw lib fit'
+# print fit.alpha
+# figPDF = powerlaw.plot_pdf(instrength, color='b')
+# powerlaw.plot_pdf(instrength, linear_bins=True, color='r', ax=figPDF)
+# figPDF.scatter(klist, plist, c='k', s=50, alpha=0.4,marker='+', label='Raw')
+plt.show()
