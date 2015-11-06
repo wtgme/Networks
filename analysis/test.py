@@ -46,15 +46,15 @@ Created on Mon Oct 12 10:40:27 2015
 #plt.legend()
 #plt.show()
 
-a = numpy.asarray([1,3,4,5], dtype=float)
-b = numpy.asarray([2,6,8,10], dtype=float)
-logA = numpy.log10(a)
-logB = numpy.log10(b)
-coefficients = numpy.polyfit(logB, logA, 1)
-polynomial = numpy.poly1d(coefficients)
-ys = polynomial(b)
-plt.plot(logB, logA)
-plt.plot(b, ys)
+# a = numpy.asarray([1,3,4,5], dtype=float)
+# b = numpy.asarray([2,6,8,10], dtype=float)
+# logA = numpy.log10(a)
+# logB = numpy.log10(b)
+# coefficients = numpy.polyfit(logB, logA, 1)
+# polynomial = numpy.poly1d(coefficients)
+# ys = polynomial(b)
+# plt.plot(logB, logA)
+# plt.plot(b, ys)
 
 #import numpy as np
 ##import pylab as pl
@@ -90,3 +90,53 @@ plt.plot(b, ys)
 #    tl.set_color('r')
 #plt.show()
 
+
+
+# import matplotlib.pyplot as plt
+# import numpy as np
+# plt.gca().set_color_cycle(None)
+#
+# for i in range(6):
+#     plt.plot(np.arange(10, 1, -1) + i)
+#
+# plt.show()
+
+
+'''Maximum Likelihood'''
+# import the packages
+import numpy as np
+from scipy.optimize import minimize
+import scipy.stats as stats
+
+# Set up your x values
+x = np.linspace(0, 100, num=100)
+
+# Set up your observed y values with a known slope (2.4), intercept (5), and sd (4)
+yObs = 5 + 2.4*x + np.random.normal(0, 4, 100)
+
+# Define the likelihood function where params is a list of initial parameter estimates
+def regressLL(params):
+    # Resave the initial parameter guesses
+    b0 = params[0]
+    b1 = params[1]
+    sd = params[2]
+
+    # Calculate the predicted values from the initial parameter guesses
+    yPred = b0 + b1*x
+
+    # Calculate the negative log-likelihood as the negative sum of the log of a normal
+    # PDF where the observed values are normally distributed around the mean (yPred)
+    # with a standard deviation of sd
+    logLik = -np.sum(stats.norm.logpdf(yObs, loc=yPred, scale=sd))
+
+    # Tell the function to return the NLL (this is what will be minimized)
+    return(logLik)
+
+# Make a list of initial parameter guesses (b0, b1, sd)
+initParams = [1, 1, 1]
+
+# Run the minimizer
+results = minimize(regressLL, initParams, method='nelder-mead')
+
+# Print the results. They should be really close to your actual values
+print results.x
