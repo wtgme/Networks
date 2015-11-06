@@ -13,6 +13,8 @@ import csv
 from sklearn.metrics import mean_squared_error
 import os
 from collections import Counter
+from scipy.optimize import minimize
+import scipy.stats as stats
 
 
 # load a network from file (directed weighted network)
@@ -161,7 +163,7 @@ def log_binning(list_x, list_y, bin_count=35):
     return new_bin_meanx_x, new_bin_means_y
 
 
-def log_fit(list_x, list_y, fit_start=-1, fit_end=-1):
+def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
     if fit_start != -1:
         new_x, new_y = [], []
         for index in xrange(len(list_x)):
@@ -176,6 +178,24 @@ def log_fit(list_x, list_y, fit_start=-1, fit_end=-1):
                 new_x.append(list_x[index])
                 new_y.append(list_y[index])
         list_x, list_y = new_x, new_y
+    return (list_x, list_y)
+
+
+def extended(ax, x, y, **args):
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    x_ext = np.linspace(xlim[0], xlim[1], 100)
+    p = np.polyfit(x, y , deg=1)
+    y_ext = np.poly1d(p)(x_ext)
+    ax.plot(x_ext, y_ext, **args)
+    ax.set_xlim(xlim)
+    ax.set_ylim(ylim)
+    return ax
+
+
+def log_fit_ls(list_x, list_y, fit_start=-1, fit_end=-1):
+    list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
     Y = np.asarray(list_y, dtype=float)
     logX = np.log10(X)
@@ -191,6 +211,24 @@ def log_fit(list_x, list_y, fit_start=-1, fit_end=-1):
     # return logX, logY_fit
 
 
+def log_fit_ml(list_x, list_y, fit_start=-1, fit_end=-1):
+    # TODO
+    list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
+    X = np.asarray(list_x, dtype=float)
+    Y = np.asarray(list_y, dtype=float)
+    logX = np.log10(X)
+    logY = np.log10(Y)
+
+
+def log_fit_ks(list_x, list_y, fit_start=-1, fit_end=-1):
+    # TODO
+    list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
+    X = np.asarray(list_x, dtype=float)
+    Y = np.asarray(list_y, dtype=float)
+    logX = np.log10(X)
+    logY = np.log10(Y)
+
+
 def pmd(data):
     counter = Counter(data)
     counter_sum = sum(counter.values())
@@ -204,16 +242,47 @@ def pmd(data):
 def power_law_fit_ls(data, name, bin_count=30, ax=None, color='r', **kwargs):
     # data = drop_zeros(data)
     klist, plist = pmd(data)
+    print klist
+    print plist
     if not ax:
-        plt.scatter(klist, plist, c=color, s=50, alpha=0.5,marker='+', label='Raw '+name)
+        plt.scatter(klist, plist, c=color, s=30, alpha=0.4,marker='+', label='Raw '+name)
         ax = plt.gca()
     else:
-        ax.scatter(klist, plist, c=color, s=50, alpha=0.5,marker='+', label='Raw '+name)
+        ax.scatter(klist, plist, c=color, s=30, alpha=0.4,marker='+', label='Raw '+name)
     kmeans, pmeans = log_binning(klist, plist, bin_count)
-    ax.scatter(kmeans, pmeans, c=color, s=30, marker='o', label='Binned '+name)
-    fit_x, fit_y = log_fit(kmeans, pmeans)
-    ax.plot(fit_x, fit_y, c=color, linestyle='--', label='Fitted '+name)
+    ax.scatter(kmeans, pmeans, c=color, s=50, marker='o', label='Binned '+name)
+    '''whole fitting'''
+    # fit_x, fit_y = log_fit_ls(kmeans, pmeans)
+    # ax.plot(fit_x, fit_y, c=color, linewidth=2, linestyle='--', label='Fitted '+name)
+
+    '''Split fitting'''
+    fit_x, fit_y = log_fit_ls(kmeans, pmeans, -1, 10)
+    ax.plot(fit_x, fit_y, c=color, linewidth=2,linestyle='-', label='Fitted 1 '+name)
+    fit_x, fit_y = log_fit_ls(kmeans, pmeans, 10, 500)
+    ax.plot(fit_x, fit_y, c='r',linewidth=2, linestyle='-', label='Fitted 2 '+name)
+    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, 100, 200)
+    # ax.plot(fit_x, fit_y, c='g',linewidth=2, linestyle='-', label='Fitted 3 '+name)
     return ax
+
+
+def neibors_static(DG, node, neib='pre', direct='in', weight=False):
+    if neib == 'suc':
+        neibors = DG.successors(node)
+    else:
+        neibors = DG.predecessors(node)
+    if direct == 'out':
+        if weight:
+            values = [DG.out_degree(n, weight='weight') for n in neibors]
+        else:
+            values = [DG.out_degree(n) for n in neibors]
+    else:
+        if weight:
+            values = [DG.in_degree(n, weight='weight') for n in neibors]
+        else:
+            values = [DG.in_degree(n) for n in neibors]
+    if len(values) != len(neibors):
+        print 'aaaaa........'
+    return float(sum(values))/len(neibors)
 
 
 # network analysis
@@ -227,6 +296,9 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In \t Out \t In+Out'
 indegree, outdegree, instrength, outstrength = [],[],[],[]
+suc_in_d, suc_out_d, pre_in_d, pre_out_d = [], [], [], []
+suc_in_s, suc_out_s, pre_in_s, pre_out_s = [], [], [], []
+
 # s = 0.0
 # c = 0
 for node in DG.nodes():
@@ -238,6 +310,18 @@ for node in DG.nodes():
         outdegree.append(out_d)
         instrength.append(in_s)
         outstrength.append(out_s)
+        # print 'node',node,'indegree', in_d, 'outdegree', out_d
+        suc_in_d.append(neibors_static(DG, node, 'suc', 'in', False))
+        suc_out_d.append(neibors_static(DG, node, 'suc', 'out', False))
+        pre_in_d.append(neibors_static(DG, node, 'pre', 'in', False))
+        pre_out_d.append(neibors_static(DG, node, 'pre', 'out', False))
+
+        suc_in_s.append(neibors_static(DG, node, 'suc', 'in', True))
+        suc_out_s.append(neibors_static(DG, node, 'suc', 'out', True))
+        pre_in_s.append(neibors_static(DG, node, 'pre', 'in', True))
+        pre_out_s.append(neibors_static(DG, node, 'pre', 'out', True))
+
+print
     # if in_d == 1:
     #     print out_d
         # s += in_d
@@ -245,7 +329,7 @@ for node in DG.nodes():
 # print s/c
 
 
-def deg_str_fit(lista, l, xlabel, ylabel, bin_count=30):
+def deg_str_fit(lista, l, xlabel, ylabel, bin_count=50):
     plt.clf()
     pdf = plt.gca()
     pdf = power_law_fit_ls(lista, l, bin_count, ax=pdf, color='b')
@@ -261,22 +345,24 @@ def deg_str_fit(lista, l, xlabel, ylabel, bin_count=30):
     leg.draw_frame(False)
     plt.show()
 
-# deg_str_fit(indegree,'indegree','k','p(k)')
-# deg_str_fit(outdegree,'outdegree','k','p(k)')
-# deg_str_fit(instrength,'instrength','s','p(s)')
-# deg_str_fit(outstrength,'outstrength','s','p(s)')
+# deg_str_fit(indegree,'indegree','k','p(k)', 50)
+# deg_str_fit(outdegree,'outdegree','k','p(k)', 50)
+# deg_str_fit(instrength,'instrength','s','p(s)', 70)
+# deg_str_fit(outstrength,'outstrength','s','p(s)', 70)
 
 
-def dependence(lista, listb, l, xlabel, ylabel, bin_count=30):
+def dependence(listx, listy, l, xlabel, ylabel, bin_count=30):
     plt.clf()
-    plt.scatter(lista, listb, s=20, c='k', alpha=0.3, marker='.', label='raw '+l)
+    plt.scatter(listx, listy, s=20, c='k', alpha=0.3, marker='.', label='raw '+l)
     ax = plt.gca()
-    xmeans, ymeans = log_binning(lista, listb, bin_count)
+    xmeans, ymeans = log_binning(listx, listy, bin_count)
     ax.scatter(xmeans, ymeans, s=50, c='b', marker='o', label='binned '+l)
-    xfit, yfit = log_fit(xmeans, ymeans, 2)
+    xfit, yfit = log_fit_ls(xmeans, ymeans)
     ax.plot(xfit, yfit, c='r', linewidth=2, linestyle='--', label='Fitted '+l)
     ax.set_xscale("log")
-    ax.set_yscale("log")
+    # ax.set_yscale("log")
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
     ax.set_xlim(xmin=1)
     ax.set_ylim(ymin=1)
     handles, labels = ax.get_legend_handles_labels()
@@ -284,10 +370,32 @@ def dependence(lista, listb, l, xlabel, ylabel, bin_count=30):
     leg.draw_frame(True)
     plt.show()
 
-# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree')
-dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree', 20)
-# dependence(instrength, outstrength, '$s_o(s_i)$', 'instrength', 'outstrength')
-# dependence(outstrength, instrength, '$s_i(s_o)$', 'outstrength', 'instrength', 35)
+# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 50)
+# dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree', 50)
+# dependence(instrength, outstrength, '$s_o(s_i)$', 'instrength', 'outstrength', 50)
+# dependence(outstrength, instrength, '$s_i(s_o)$', 'outstrength', 'instrength', 50)
+
+# dependence(indegree, pre_in_d, '$k_{i}^{pre}(k_i)$', 'indegree', 'Avg. Indegree of predecessors', 50)
+# dependence(indegree, pre_out_d, '$k_{o}^{pre}(k_i)$', 'indegree', 'Avg. Outdegree of predecessors', 50)
+# dependence(indegree, suc_in_d, '$k_{i}^{suc}(k_i)$', 'indegree', 'Avg. Indegree of successors', 50)
+# dependence(indegree, suc_out_d, '$k_{o}^{suc}(k_i)$', 'indegree', 'Avg. Outdegree of successors', 50)
+
+# dependence(outdegree, pre_in_d, '$k_{i}^{pre}(k_o)$', 'outdegree', 'Avg. Indegree of predecessors', 50)
+# dependence(outdegree, pre_out_d, '$k_{o}^{pre}(k_o)$', 'outdegree', 'Avg. Outdegree of predecessors', 50)
+# dependence(outdegree, suc_in_d, '$k_{i}^{suc}(k_o)$', 'outdegree', 'Avg. Indegree of successors', 50)
+# dependence(outdegree, suc_out_d, '$k_{o}^{suc}(k_o)$', 'outdegree', 'Avg. Outdegree of successors', 50)
+
+# dependence(instrength, pre_in_s, '$s_{i}^{pre}(s_i)$', 'Instrength', 'Avg. instrength of predecessors', 50)
+# dependence(instrength, pre_out_s, '$s_{o}^{pre}(s_i)$', 'Instrength', 'Avg. outstrength of predecessors', 50)
+# dependence(instrength, suc_in_s, '$s_{i}^{suc}(s_i)$', 'Instrength', 'Avg. instrength of successors', 50)
+# dependence(instrength, suc_out_s, '$s_{o}^{suc}(s_i)$', 'Instrength', 'Avg. outstrength of successors', 50)
+
+# dependence(outstrength, pre_in_d, '$s_{i}^{pre}(s_o)$', 'Outstrength', 'Avg. instrength of predecessors', 50)
+# dependence(outstrength, pre_out_d, '$s_{o}^{pre}(s_o)$', 'Outstrength', 'Avg. outstrength of predecessors', 50)
+# dependence(outstrength, suc_in_d, '$s_{i}^{suc}(s_o)$', 'Outstrength', 'Avg. instrength of successors', 50)
+# dependence(outstrength, suc_out_d, '$s_{o}^{suc}(s_o)$', 'Outstrength', 'Avg. outstrength of successors', 50)
+
+
 
 # print 'pearson correlation of indegree and outdegree: %f' %(pearson(indegree, instrength))
 # print 'pearson correlation of instrength and outstrength: %f' %(pearson(outdegree, outstrength))
