@@ -156,25 +156,36 @@ Created on Mon Oct 12 10:40:27 2015
 # print G.successors(2)
 
 
+# import numpy as np
+# import matplotlib.pyplot as plt
+#
+# x = np.random.normal(size=37)
+#
+# density, bins = np.histogram(x, density=True)
+# unity_density = density / density.sum()
+#
+# fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex=True, figsize=(8,4))
+# widths = bins[:-1] - bins[1:]
+# ax1.bar(bins[1:], density, width=widths)
+# ax2.bar(bins[1:], density.cumsum(), width=widths)
+#
+# ax3.bar(bins[1:], unity_density, width=widths)
+# ax4.bar(bins[1:], unity_density.cumsum(), width=widths)
+#
+# ax1.set_ylabel('Not normalized')
+# ax3.set_ylabel('Normalized')
+# ax3.set_xlabel('PDFs')
+# ax4.set_xlabel('CDFs')
+# fig.tight_layout()
+# plt.show()
+
 import numpy as np
-import matplotlib.pyplot as plt
-
-x = np.random.normal(size=37)
-
-density, bins = np.histogram(x, density=True)
-unity_density = density / density.sum()
-
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(nrows=2, ncols=2, sharex=True, figsize=(8,4))
-widths = bins[:-1] - bins[1:]
-ax1.bar(bins[1:], density, width=widths)
-ax2.bar(bins[1:], density.cumsum(), width=widths)
-
-ax3.bar(bins[1:], unity_density, width=widths)
-ax4.bar(bins[1:], unity_density.cumsum(), width=widths)
-
-ax1.set_ylabel('Not normalized')
-ax3.set_ylabel('Normalized')
-ax3.set_xlabel('PDFs')
-ax4.set_xlabel('CDFs')
-fig.tight_layout()
-plt.show()
+a = np.arange(5)
+hist, bin_edges = np.histogram(a, density=True)
+print a
+print hist
+print bin_edges
+print hist.sum()
+print np.sum(hist*np.diff(bin_edges))
+hist[hist==0] = np.nan
+print hist

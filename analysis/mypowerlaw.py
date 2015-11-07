@@ -2026,10 +2026,10 @@ def plot_pdf(data, ax=None, linear_bins=False, **kwargs):
     hist[hist==0] = nan
     if not ax:
         import matplotlib.pyplot as plt
-        plt.plot(bin_centers, hist, **kwargs)
+        plt.plot(bin_centers, hist, 'o', **kwargs)
         ax = plt.gca()
     else:
-        ax.plot(bin_centers, hist, **kwargs)
+        ax.plot(bin_centers, hist, 'o', **kwargs)
     ax.set_xscale("log")
     ax.set_yscale("log")
     return ax

@@ -13,9 +13,6 @@ import csv
 from sklearn.metrics import mean_squared_error
 import os
 from collections import Counter
-import powerlaw
-from scipy.optimize import minimize
-import scipy.stats as stats
 
 
 # load a network from file (directed weighted network)
@@ -100,6 +97,30 @@ def plot_whole_network(DG):
     plt.show()
 
 
+def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
+    if not xmax:
+        xmax = max(data)
+    if not xmin:
+        xmin = min(data)
+    if linear_bins:
+        bins = range(int(xmin), int(xmax))
+    else:
+        log_min_size = np.log10(xmin)
+        log_max_size = np.log10(xmax)
+        number_of_bins = np.ceil((log_max_size-log_min_size)*10)
+        bins=np.unique(
+                np.floor(
+                    np.logspace(
+                        log_min_size, log_max_size, num=number_of_bins)))
+    hist, edges = np.histogram(data, bins, density=True)
+    bin_centers = (edges[1:]+edges[:-1])/2.0
+    new_x, new_y = [], []
+    for index in xrange(len(hist)):
+        if hist[index] != 0:
+            new_x.append(bin_centers[index])
+            new_y.append(hist[index])
+    return new_x, new_y
+
 def pearson(x, y):
     # calculate the pearson correlation of two list
     n = len(x)
@@ -129,74 +150,35 @@ def rmse(predict, truth):
     return RMSE
 
 
-def CPD(list_x, bin_count=35):
-    max_x = np.log10(max(list_x))
-    min_x = np.log10(min(drop_zeros(list_x)))
-    bins_x = np.logspace(min_x, max_x, num=bin_count)
-    weights = np.ones_like(list_x)/float(len(list_x))
-    hist, bin_deges = np.histogram(list_x, bins_x, weights=weights)
-    # cum = np.cumsum(hist)
-    cum = np.cumsum(hist[::-1])[::-1]
-    # print len(cum)
-    # print len(bin_deges)
-    return cum, bin_deges
-
-def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
-    if not xmax:
-        xmax = max(data)
-    if not xmin:
-        xmin = min(data)
+def mean_bin(list_x, list_y, linear_bins=False):
+    # the returned values are raw values, not logarithmic values
+    size = len(list_x)
+    xmin = min(list_x)
+    xmax = max(list_x)
     if linear_bins:
-        bins = range(int(xmin), int(xmax))
+        bins = range(int(xmin), int(xmax+1))
     else:
         log_min_size = np.log10(xmin)
-        log_max_size = np.log10(xmax)
+        log_max_size = np.log10(xmax+1)
         number_of_bins = np.ceil((log_max_size-log_min_size)*10)
-        bins=np.unique(
+        bins = np.unique(
                 np.floor(
                     np.logspace(
                         log_min_size, log_max_size, num=number_of_bins)))
-    hist, edges = np.histogram(data, bins, density=True)
-    return edges, hist
 
-def plot_pdf(data, ax=None, linear_bins=False, **kwargs):
-    edges, hist = pdf(data, linear_bins=linear_bins, **kwargs)
-    bin_centers = (edges[1:]+edges[:-1])/2.0
-    hist[hist==0] = np.nan
-    print sum(hist)
-    print np.sum(hist*np.diff(edges))
-    if not ax:
-        plt.plot(bin_centers, hist, 'bo', **kwargs)
-        ax = plt.gca()
-    else:
-        ax.plot(bin_centers, hist, 'bo', **kwargs)
-    ax.set_xscale("log")
-    ax.set_yscale("log")
-    return ax
-
-def log_binning(list_x, list_y, bin_count=35):
-    # the returned values are raw values, not logarithmic values
-    size = len(list_x)
-    log_min_size = np.log10(min(list_x))
-    log_max_size = np.log10(max(list_x))
-    number_of_bins = np.ceil((log_max_size-log_min_size)*10)
-    bins_x = np.unique(np.floor(np.logspace(log_min_size, log_max_size, num=number_of_bins)))
-    # max_x = np.log10(max(list_x)+1)
-    # min_x = np.log10(min(drop_zeros(list_x)))
-    # bins_x = np.logspace(min_x, max_x, num=bin_count)
     new_bin_meanx_x, new_bin_means_y = [], []
-    count_x = np.histogram(list_x, bins_x)[0]
-    count_x_weight = np.histogram(list_x, bins_x, weights=list_x)[0].astype(float)
-    for index in xrange(len(bins_x)-1):
-        if count_x[index] != 0:
-            new_bin_meanx_x.append(count_x_weight[index]/count_x[index])
-            range_min, range_max = bins_x[index], bins_x[index+1]
+    hist_x = np.histogram(list_x, bins)[0]
+    hist_x_w = np.histogram(list_x, bins, weights=list_x)[0].astype(float)
+    for index in xrange(len(bins)-1):
+        if hist_x[index] != 0:
+            new_bin_meanx_x.append(hist_x_w[index]/hist_x[index])
+            range_min, range_max = bins[index], bins[index+1]
             sum_y = 0.0
             for i in xrange(size):
                 key = list_x[i]
                 if (key >= range_min) and (key < range_max):
                     sum_y += list_y[i]
-            new_bin_means_y.append(sum_y/count_x[index])
+            new_bin_means_y.append(sum_y/hist_x[index])
     return new_bin_meanx_x, new_bin_means_y
 
 
@@ -218,20 +200,7 @@ def cut_lists(list_x, list_y, fit_start=-1, fit_end=-1):
     return (list_x, list_y)
 
 
-def extended(ax, x, y, **args):
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
-
-    x_ext = np.linspace(xlim[0], xlim[1], 100)
-    p = np.polyfit(x, y , deg=1)
-    y_ext = np.poly1d(p)(x_ext)
-    ax.plot(x_ext, y_ext, **args)
-    ax.set_xlim(xlim)
-    ax.set_ylim(ylim)
-    return ax
-
-
-def log_fit_ls(list_x, list_y, fit_start=-1, fit_end=-1):
+def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
     Y = np.asarray(list_y, dtype=float)
@@ -248,7 +217,7 @@ def log_fit_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     # return logX, logY_fit
 
 
-def log_fit_ml(list_x, list_y, fit_start=-1, fit_end=-1):
+def lr_ml(list_x, list_y, fit_start=-1, fit_end=-1):
     # TODO
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
@@ -257,50 +226,13 @@ def log_fit_ml(list_x, list_y, fit_start=-1, fit_end=-1):
     logY = np.log10(Y)
 
 
-def log_fit_ks(list_x, list_y, fit_start=-1, fit_end=-1):
+def lr_ks(list_x, list_y, fit_start=-1, fit_end=-1):
     # TODO
     list_x, list_y = cut_lists(list_x, list_y, fit_start, fit_end)
     X = np.asarray(list_x, dtype=float)
     Y = np.asarray(list_y, dtype=float)
     logX = np.log10(X)
     logY = np.log10(Y)
-
-
-def pmd(data):
-    counter = Counter(data)
-    counter_sum = sum(counter.values())
-    klist, plist = [], []
-    for key in counter:
-        klist.append(key)
-        plist.append(float(counter.get(key))/counter_sum)
-    return (klist, plist)
-
-
-def power_law_fit_ls(data, name, bin_count=30, ax=None, color='r', **kwargs):
-    # data = drop_zeros(data)
-    klist, plist = pmd(data)
-    # print klist
-    # print plist
-    if not ax:
-        plt.scatter(klist, plist, c=color, s=30, alpha=0.4,marker='+', label='Raw '+name)
-        ax = plt.gca()
-    else:
-        ax.scatter(klist, plist, c=color, s=30, alpha=0.4,marker='+', label='Raw '+name)
-    kmeans, pmeans = log_binning(klist, plist, bin_count)
-    ax.scatter(kmeans, pmeans, c=color, s=50, marker='o', label='Binned '+name)
-    '''whole fitting'''
-    fit_x, fit_y = log_fit_ls(kmeans, pmeans)
-    ax.plot(fit_x, fit_y, c=color, linewidth=2, linestyle='--', label='Fitted '+name)
-
-    '''Split fitting'''
-    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, -1, 10)
-    # ax.plot(fit_x, fit_y, c=color, linewidth=2,linestyle='-', label='Fitted 1 '+name)
-    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, 10, 500)
-    # ax.plot(fit_x, fit_y, c='r',linewidth=2, linestyle='-', label='Fitted 2 '+name)
-    # fit_x, fit_y = log_fit_ls(kmeans, pmeans, 100, 200)
-    # ax.plot(fit_x, fit_y, c='g',linewidth=2, linestyle='-', label='Fitted 3 '+name)
-
-    return ax
 
 
 def neibors_static(DG, node, neib='pre', direct='in', weight=False):
@@ -318,10 +250,27 @@ def neibors_static(DG, node, neib='pre', direct='in', weight=False):
             values = [DG.in_degree(n, weight='weight') for n in neibors]
         else:
             values = [DG.in_degree(n) for n in neibors]
-    if len(values) != len(neibors):
-        print 'aaaaa........'
     return float(sum(values))/len(neibors)
 
+
+def dependence(listx, listy, l, xlabel, ylabel):
+    plt.clf()
+    plt.scatter(listx, listy, s=20, c='k', alpha=0.3, marker='.', label='raw '+l)
+    ax = plt.gca()
+    xmeans, ymeans = mean_bin(listx, listy)
+    ax.scatter(xmeans, ymeans, s=50, c='b', marker='o', label='binned '+l)
+    xfit, yfit = lr_ls(xmeans, ymeans, 2, 102)
+    ax.plot(xfit, yfit, c='r', linewidth=2, linestyle='--', label='Fitted '+l)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_xlim(xmin=1)
+    ax.set_ylim(ymin=1)
+    handles, labels = ax.get_legend_handles_labels()
+    leg = ax.legend(handles, labels, loc=0)
+    leg.draw_frame(True)
+    plt.show()
 
 # network analysis
 DG = load_network()
@@ -367,53 +316,40 @@ print
 # print s/c
 
 
-def deg_str_fit(lista, l, xlabel, ylabel, bin_count=50):
-    plt.clf()
-    pdf = plt.gca()
-    pdf = power_law_fit_ls(lista, l, bin_count, ax=pdf, color='b')
-    # pdf = power_law_fit_ls(outstrength, 'outstrength', 30, ax=pdf, color='r')
-    pdf.set_ylabel(ylabel)
-    pdf.set_xlabel(xlabel)
-    pdf.set_xscale("log")
-    pdf.set_yscale("log")
-    pdf.set_xlim(xmin=1)
-    pdf.set_ylim(ymax=1)
-    handles, labels = pdf.get_legend_handles_labels()
-    leg = pdf.legend(handles, labels, loc=0)
-    leg.draw_frame(False)
-    plt.show()
+'''Plot PDF'''
+# plt.gcf()
+# data = instrength
+# list_x, list_y = pdf(data, linear_bins=True)
+# plt.plot(list_x, list_y, 'r+', label='Raw instrength')
+# ax = plt.gca()
+# list_x, list_y = pdf(data)
+# ax.plot(list_x, list_y, 'ro', label='Binned instrength')
+# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted instrength')
+# data = outstrength
+# list_x, list_y = pdf(data, linear_bins=True)
+# ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+# ax = plt.gca()
+# list_x, list_y = pdf(data)
+# ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
+# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# ax.set_xscale("log")
+# ax.set_yscale("log")
+# ax.set_xlabel('k')
+# ax.set_ylabel('p(k)')
+# ax.set_xlim(xmin=1)
+# ax.set_ylim(ymax=1)
+# handles, labels = ax.get_legend_handles_labels()
+# leg = ax.legend(handles, labels, loc=0)
+# leg.draw_frame(True)
+# plt.show()
 
 
-# deg_str_fit(indegree,'indegree','k','p(k)', 50)
-# deg_str_fit(outdegree,'outdegree','k','p(k)', 50)
-# deg_str_fit(instrength,'instrength','s','p(s)', 70)
-plot_pdf(instrength)
-# deg_str_fit(outstrength,'outstrength','s','p(s)', 70)
-
-
-def dependence(listx, listy, l, xlabel, ylabel, bin_count=30):
-    plt.clf()
-    plt.scatter(listx, listy, s=20, c='k', alpha=0.3, marker='.', label='raw '+l)
-    ax = plt.gca()
-    xmeans, ymeans = log_binning(listx, listy, bin_count)
-    ax.scatter(xmeans, ymeans, s=50, c='b', marker='o', label='binned '+l)
-    xfit, yfit = log_fit_ls(xmeans, ymeans)
-    ax.plot(xfit, yfit, c='r', linewidth=2, linestyle='--', label='Fitted '+l)
-    ax.set_xscale("log")
-    # ax.set_yscale("log")
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel(xlabel)
-    ax.set_xlim(xmin=1)
-    ax.set_ylim(ymin=1)
-    handles, labels = ax.get_legend_handles_labels()
-    leg = ax.legend(handles, labels, loc=0)
-    leg.draw_frame(True)
-    plt.show()
-
-# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 50)
-# dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree', 50)
+# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree')
+dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')
 # dependence(instrength, outstrength, '$s_o(s_i)$', 'instrength', 'outstrength', 50)
-# dependence(outstrength, instrength, '$s_i(s_o)$', 'outstrength', 'instrength', 50)
+# dependence(outstrength, instrength, '$s_i(s_o)$', 'outstrength', 'instrength')
 
 # dependence(indegree, pre_in_d, '$k_{i}^{pre}(k_i)$', 'indegree', 'Avg. Indegree of predecessors', 50)
 # dependence(indegree, pre_out_d, '$k_{o}^{pre}(k_i)$', 'indegree', 'Avg. Outdegree of predecessors', 50)
@@ -454,4 +390,4 @@ def dependence(listx, listy, l, xlabel, ylabel, bin_count=30):
 # figPDF = powerlaw.plot_pdf(instrength, color='b')
 # powerlaw.plot_pdf(instrength, linear_bins=True, color='r', ax=figPDF)
 # figPDF.scatter(klist, plist, c='k', s=50, alpha=0.4,marker='+', label='Raw')
-plt.show()
+# plt.show()
