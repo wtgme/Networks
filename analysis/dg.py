@@ -12,7 +12,7 @@ import numpy as np
 import csv
 from sklearn.metrics import mean_squared_error
 import os
-from collections import Counter
+
 
 
 # load a network from file (directed weighted network)

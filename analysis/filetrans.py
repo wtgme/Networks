@@ -22,6 +22,3 @@ with open('mrredges-no-tweet-no-retweet-poi-counted.csv', 'rt') as f:
         userID = userIdMap.get(u2,len(userIdMap))
         userIdMap[u2] = userID
         print u1, u2, btype, count
-
-
-
