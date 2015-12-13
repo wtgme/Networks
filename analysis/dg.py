@@ -5,6 +5,8 @@ Created on 5:56 PM, 11/4/15
 @author: wt
 
 """
+import sys
+sys.path.append('..')
 from networkx import *
 import math
 import matplotlib.pyplot as plt
@@ -15,10 +17,15 @@ import os
 
 
 
+
 # load a network from file (directed weighted network)
 def load_network():
     DG = DiGraph()
-    file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/mrredges-no-tweet-no-retweet-poi-counted.csv'
+    # /data/reference/sample_reply_mention.csv
+    # /data/echelon/mrredges-no-tweet-no-retweet-poi-counted.csv
+    # file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/reference/sample_reply_mention.csv'
+    file_path = '../data/reference/sample_reply_mention.csv'
+    print file_path
     with open(file_path, 'rt') as fo:
         reader = csv.reader(fo)
         first_row = next(reader)
@@ -90,11 +97,10 @@ def plot_whole_network(DG):
     # pos = shell_layout(DG)
     pos = spring_layout(DG)
     # pos = spectral_layout(DG)
+    # plt.title('Plot of Network')
     draw(DG, pos)
     plt.show()
-    plt.title('Plot of Network(reply)')
-    draw(DG, pos)
-    plt.show()
+
 
 
 def pdf(data, xmin=None, xmax=None, linear_bins=False, **kwargs):
@@ -208,7 +214,7 @@ def lr_ls(list_x, list_y, fit_start=-1, fit_end=-1):
     logY = np.log10(Y)
     coefficients = np.polyfit(logX, logY, 1)
     polynomial = np.poly1d(coefficients)
-    print 'Polynomial:', polynomial
+    print 'Polynomial: (', fit_start, fit_end, ')',  polynomial
     logY_fit = polynomial(logX)
     print 'Fitting RMSE(log)', rmse(logY, logY_fit)
     print 'Fitting RMSE(raw)', rmse(Y, np.power(10, logY_fit))
@@ -253,14 +259,14 @@ def neibors_static(DG, node, neib='pre', direct='in', weight=False):
     return float(sum(values))/len(neibors)
 
 
-def dependence(listx, listy, l, xlabel, ylabel):
+def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000):
     plt.clf()
-    plt.scatter(listx, listy, s=20, c='k', alpha=0.3, marker='.', label='raw '+l)
+    plt.scatter(listx, listy, s=20, c='#fee8c8', marker='+', label='raw '+l)
     ax = plt.gca()
     xmeans, ymeans = mean_bin(listx, listy)
-    ax.scatter(xmeans, ymeans, s=50, c='b', marker='o', label='binned '+l)
-    xfit, yfit = lr_ls(xmeans, ymeans, 2, 102)
-    ax.plot(xfit, yfit, c='r', linewidth=2, linestyle='--', label='Fitted '+l)
+    ax.scatter(xmeans, ymeans, s=50, c='#fdbb84', marker='o', label='binned '+l)
+    xfit, yfit = lr_ls(xmeans, ymeans, start, end)
+    ax.plot(xfit, yfit, c='#e34a33', linewidth=2, linestyle='--', label='Fitted '+l)
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_ylabel(ylabel)
@@ -268,7 +274,7 @@ def dependence(listx, listy, l, xlabel, ylabel):
     ax.set_xlim(xmin=1)
     ax.set_ylim(ymin=1)
     handles, labels = ax.get_legend_handles_labels()
-    leg = ax.legend(handles, labels, loc=0)
+    leg = ax.legend(handles, labels, loc=4)
     leg.draw_frame(True)
     plt.show()
 
@@ -286,8 +292,7 @@ indegree, outdegree, instrength, outstrength = [],[],[],[]
 suc_in_d, suc_out_d, pre_in_d, pre_out_d = [], [], [], []
 suc_in_s, suc_out_s, pre_in_s, pre_out_s = [], [], [], []
 
-# s = 0.0
-# c = 0
+
 for node in DG.nodes():
     # print 'Degree: %s \t %d \t %d \t %d' %(node, DG.in_degree(node), DG.out_degree(node), DG.degree(node))
     # print 'Strength: %s \t %d \t %d \t %d' %(node, DG.in_degree(node, weight='weight'), DG.out_degree(node, weight='weight'), DG.degree(node, weight='weight'))
@@ -308,32 +313,28 @@ for node in DG.nodes():
         pre_in_s.append(neibors_static(DG, node, 'pre', 'in', True))
         pre_out_s.append(neibors_static(DG, node, 'pre', 'out', True))
 
-print
-    # if in_d == 1:
-    #     print out_d
-        # s += in_d
-#         c += 1
-# print s/c
 
 
-'''Plot PDF'''
+# '''Plot PDF'''
 # plt.gcf()
-# data = instrength
-# list_x, list_y = pdf(data, linear_bins=True)
-# plt.plot(list_x, list_y, 'r+', label='Raw instrength')
-# ax = plt.gca()
-# list_x, list_y = pdf(data)
-# ax.plot(list_x, list_y, 'ro', label='Binned instrength')
-# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
-# ax.plot(list_fit_x, list_fit_y, 'r--', label='Fitted instrength')
 # data = outstrength
 # list_x, list_y = pdf(data, linear_bins=True)
-# ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+# plt.plot(list_x, list_y, 'r+', label='Raw outstrength')
 # ax = plt.gca()
 # list_x, list_y = pdf(data)
-# ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
-# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# ax.plot(list_x, list_y, 'ro', label='Binned outstrength')
+# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
+# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 800, 10000)
 # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# # data = outstrength
+# # list_x, list_y = pdf(data, linear_bins=True)
+# # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+# # ax = plt.gca()
+# # list_x, list_y = pdf(data)
+# # ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
+# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
 # ax.set_xscale("log")
 # ax.set_yscale("log")
 # ax.set_xlabel('k')
@@ -346,9 +347,9 @@ print
 # plt.show()
 
 
-# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree')
-dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')
-# dependence(instrength, outstrength, '$s_o(s_i)$', 'instrength', 'outstrength', 50)
+# dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 1, 300)
+# dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')
+# dependence(instrength, outstrength, '$s_o(s_i)$', 'instrength', 'outstrength', 50, 1700)
 # dependence(outstrength, instrength, '$s_i(s_o)$', 'outstrength', 'instrength')
 
 # dependence(indegree, pre_in_d, '$k_{i}^{pre}(k_i)$', 'indegree', 'Avg. Indegree of predecessors', 50)
