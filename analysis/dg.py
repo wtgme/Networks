@@ -286,6 +286,10 @@ print 'The number of nodes: %d' %(DG.number_of_nodes())
 print 'The number of edges: %d' %(DG.size())
 print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
+G = DG.to_undirected()
+print(nx.is_connected(G))
+print(nx.inumber_connected_components(G))
+
 print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In \t Out \t In+Out'
 indegree, outdegree, instrength, outstrength = [],[],[],[]
@@ -316,35 +320,35 @@ for node in DG.nodes():
 
 
 '''Plot PDF'''
-plt.gcf()
-data = outstrength
-list_x, list_y = pdf(data, linear_bins=True)
-plt.plot(list_x, list_y, 'r+', label='Raw outstrength')
-ax = plt.gca()
-list_x, list_y = pdf(data)
-ax.plot(list_x, list_y, 'ro', label='Binned outstrength')
-# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
-# ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
-list_fit_x, list_fit_y = lr_ls(list_x, list_y, 800, 10000)
-ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# plt.gcf()
 # data = outstrength
 # list_x, list_y = pdf(data, linear_bins=True)
-# ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+# plt.plot(list_x, list_y, 'r+', label='Raw outstrength')
 # ax = plt.gca()
 # list_x, list_y = pdf(data)
-# ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
-# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# ax.plot(list_x, list_y, 'ro', label='Binned outstrength')
+# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
+# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 800, 10000)
 # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
-ax.set_xscale("log")
-ax.set_yscale("log")
-ax.set_xlabel('k')
-ax.set_ylabel('p(k)')
-ax.set_xlim(xmin=1)
-ax.set_ylim(ymax=1)
-handles, labels = ax.get_legend_handles_labels()
-leg = ax.legend(handles, labels, loc=0)
-leg.draw_frame(True)
-plt.show()
+# # data = outstrength
+# # list_x, list_y = pdf(data, linear_bins=True)
+# # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+# # ax = plt.gca()
+# # list_x, list_y = pdf(data)
+# # ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
+# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+# ax.set_xscale("log")
+# ax.set_yscale("log")
+# ax.set_xlabel('k')
+# ax.set_ylabel('p(k)')
+# ax.set_xlim(xmin=1)
+# ax.set_ylim(ymax=1)
+# handles, labels = ax.get_legend_handles_labels()
+# leg = ax.legend(handles, labels, loc=0)
+# leg.draw_frame(True)
+# plt.show()
 
 
 # dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 1, 300)
