@@ -256,7 +256,10 @@ def neibors_static(DG, node, neib='pre', direct='in', weight=False):
             values = [DG.in_degree(n, weight='weight') for n in neibors]
         else:
             values = [DG.in_degree(n) for n in neibors]
-    return float(sum(values))/len(neibors)
+    if len(neibors):
+        return float(sum(values))/len(neibors)
+    else:
+        return 0.0
 
 
 def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000):
@@ -288,7 +291,13 @@ print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
 G = DG.to_undirected()
 print(nx.is_connected(G))
-print(nx.inumber_connected_components(G))
+print(nx.number_connected_components(G))
+largest_cc = max(nx.connected_components(G), key=len)
+
+for node in DG.nodes():
+    if node not in largest_cc:
+        DG.remove_node(node)
+
 
 print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In \t Out \t In+Out'
