@@ -24,7 +24,7 @@ def load_network():
     # /data/reference/sample_reply_mention.csv
     # /data/echelon/mrredges-no-tweet-no-retweet-poi-counted.csv
     # file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/reference/sample_reply_mention.csv'
-    file_path = '../data/reference/sample_reply_mention.csv'
+    file_path = '../data/reference/track_reply_mention.csv'
     print file_path
     with open(file_path, 'rt') as fo:
         reader = csv.reader(fo)
@@ -281,6 +281,39 @@ def dependence(listx, listy, l, xlabel, ylabel, start=1, end=1000):
     leg.draw_frame(True)
     plt.show()
 
+
+'''Plot PDF'''
+def pdf_plot(data, name, fit_start, fit_end):
+    # plt.gcf()
+    # data = outstrength
+    list_x, list_y = pdf(data, linear_bins=True)
+    plt.plot(list_x, list_y, 'r+', label='Raw '+name)
+    ax = plt.gca()
+    list_x, list_y = pdf(data)
+    ax.plot(list_x, list_y, 'ro', label='Binned '+name)
+    # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
+    # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+    list_fit_x, list_fit_y = lr_ls(list_x, list_y, fit_start, fit_end)
+    ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted '+name)
+    # data = outstrength
+    # list_x, list_y = pdf(data, linear_bins=True)
+    # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
+    # ax = plt.gca()
+    # list_x, list_y = pdf(data)
+    # ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
+    # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
+    # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlabel('k')
+    ax.set_ylabel('p(k)')
+    ax.set_xlim(xmin=1)
+    ax.set_ylim(ymax=1)
+    handles, labels = ax.get_legend_handles_labels()
+    leg = ax.legend(handles, labels, loc=0)
+    leg.draw_frame(True)
+    plt.show()
+
 # network analysis
 DG = load_network()
 print 'The number of nodes: %d' %(DG.order())
@@ -289,15 +322,18 @@ print 'The number of nodes: %d' %(DG.number_of_nodes())
 print 'The number of edges: %d' %(DG.size())
 print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
+# plot_whole_network(DG)
+
 G = DG.to_undirected()
-print(nx.is_connected(G))
-print(nx.number_connected_components(G))
+print 'Network is connected:', (nx.is_connected(G))
+print 'The number of connected components:', (nx.number_connected_components(G))
 largest_cc = max(nx.connected_components(G), key=len)
 
 for node in DG.nodes():
     if node not in largest_cc:
         DG.remove_node(node)
 
+# plot_whole_network(DG)
 
 print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In \t Out \t In+Out'
@@ -326,39 +362,7 @@ for node in DG.nodes():
         pre_in_s.append(neibors_static(DG, node, 'pre', 'in', True))
         pre_out_s.append(neibors_static(DG, node, 'pre', 'out', True))
 
-
-
-'''Plot PDF'''
-# plt.gcf()
-# data = outstrength
-# list_x, list_y = pdf(data, linear_bins=True)
-# plt.plot(list_x, list_y, 'r+', label='Raw outstrength')
-# ax = plt.gca()
-# list_x, list_y = pdf(data)
-# ax.plot(list_x, list_y, 'ro', label='Binned outstrength')
-# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 1, 100)
-# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
-# list_fit_x, list_fit_y = lr_ls(list_x, list_y, 800, 10000)
-# ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
-# # data = outstrength
-# # list_x, list_y = pdf(data, linear_bins=True)
-# # ax.plot(list_x, list_y, 'b+', label='Raw outstrength')
-# # ax = plt.gca()
-# # list_x, list_y = pdf(data)
-# # ax.plot(list_x, list_y, 'bo', label='Binned outstrength')
-# # list_fit_x, list_fit_y = lr_ls(list_x, list_y, 50)
-# # ax.plot(list_fit_x, list_fit_y, 'b--', label='Fitted outstrength')
-# ax.set_xscale("log")
-# ax.set_yscale("log")
-# ax.set_xlabel('k')
-# ax.set_ylabel('p(k)')
-# ax.set_xlim(xmin=1)
-# ax.set_ylim(ymax=1)
-# handles, labels = ax.get_legend_handles_labels()
-# leg = ax.legend(handles, labels, loc=0)
-# leg.draw_frame(True)
-# plt.show()
-
+# pdf_plot(indegree, 100, 1000)
 
 # dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 1, 300)
 # dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')
