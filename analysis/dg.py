@@ -24,16 +24,16 @@ def load_network():
     # /data/reference/sample_reply_mention.csv
     # /data/echelon/mrredges-no-tweet-no-retweet-poi-counted.csv
     # file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/reference/sample_reply_mention.csv'
-    file_path = '../data/reference/track_reply_mention.csv'
+    file_path = '../data/ed/ed_net.csv'
     print file_path
     with open(file_path, 'rt') as fo:
         reader = csv.reader(fo)
         first_row = next(reader)
         for row in reader:
-            n1 = (row[0])
-            n2 = (row[1])
-            b_type = row[2]
-            weightv = int(row[3])
+            n1 = (row[1])
+            n2 = (row[0])
+            # b_type = row[2]
+            weightv = 1
             # reply-to mentioned
             if (DG.has_node(n1)) and (DG.has_node(n2)) and (DG.has_edge(n1, n2)):
                 DG[n1][n2]['weight'] += weightv
@@ -65,7 +65,7 @@ def out_adjacency_matrix(DG):
 def load_poi():
     # Get profiles of all users
     poi = {}
-    file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/poi.csv'
+    file_path = os.sep.join(os.path.dirname(__file__).split(os.sep)[:-1])+'/data/ed/ed_poi.csv'
     f = open(file_path, 'rb')
     reader = csv.reader(f, lineterminator='\n')
     first_row = next(reader)
@@ -323,17 +323,17 @@ print 'The number of edges: %d' %(DG.size())
 print 'The number of self-loop: %d' %(DG.number_of_selfloops())
 
 # plot_whole_network(DG)
-
-G = DG.to_undirected()
-print 'Network is connected:', (nx.is_connected(G))
-print 'The number of connected components:', (nx.number_connected_components(G))
-largest_cc = max(nx.connected_components(G), key=len)
-
-for node in DG.nodes():
-    if node not in largest_cc:
-        DG.remove_node(node)
-
 # plot_whole_network(DG)
+
+# G = DG.to_undirected()
+# print 'Network is connected:', (nx.is_connected(G))
+# print 'The number of connected components:', (nx.number_connected_components(G))
+# largest_cc = max(nx.connected_components(G), key=len)
+#
+#
+# for node in DG.nodes():
+#     if node not in largest_cc:
+#         DG.remove_node(node)
 
 print 'The plot of in-degree and out-degree of nodes'
 print 'Node \t In \t Out \t In+Out'
@@ -362,7 +362,7 @@ for node in DG.nodes():
         pre_in_s.append(neibors_static(DG, node, 'pre', 'in', True))
         pre_out_s.append(neibors_static(DG, node, 'pre', 'out', True))
 
-# pdf_plot(indegree, 100, 1000)
+# pdf_plot(indegree, 'indegree', 100, 1000)
 
 # dependence(indegree, outdegree, '$k_o(k_i)$', 'indegree', 'outdegree', 1, 300)
 # dependence(outdegree, indegree, '$k_i(k_o)$', 'outdegree', 'indegree')
